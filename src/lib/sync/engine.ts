@@ -65,7 +65,12 @@ export async function runFullSync(): Promise<SyncResult> {
     // complete. Individual user feeds filter to their own sync_window_weeks.
     const to = addWeeks(now, 26); // ~6 months ahead
 
-    for (const entity of entities) {
+    for (let i = 0; i < entities.length; i++) {
+      const entity = entities[i];
+      // Respect SportRadar's 1 req/sec rate limit. Competition entities need
+      // 2 API calls (seasons + schedule); team entities need 1. Add a 1.1s
+      // gap between entities to stay safely under the limit.
+      if (i > 0) await new Promise((r) => setTimeout(r, 1100));
       try {
         const entityResult = await syncEntity(entity, provider, now, to);
         result.eventsCreated += entityResult.created;
