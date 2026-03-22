@@ -1,3 +1,5 @@
+<img width="936" height="680" alt="image" src="https://github.com/user-attachments/assets/7534aa28-bd87-4fe4-9424-bea2d10307e8" />
+
 # SportSync
 
 Automatically sync sports match schedules to any calendar app via a personal iCal feed.
