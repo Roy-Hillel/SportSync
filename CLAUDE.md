@@ -152,3 +152,58 @@ Both scripts load `.env.local` via `dotenv` before importing the DB module (lazy
 4. Run `npm run db:migrate` against production DB
 5. Run `npm run bootstrap` against production DB (one-time)
 6. Cron runs automatically per `vercel.json`
+
+<!-- GSD:project-start source:PROJECT.md -->
+## Project
+
+**SportSync**
+
+SportSync is a personal web app that automatically syncs soccer match schedules into any calendar app via a personal iCal feed. Users sign in with Google, subscribe to teams and competitions, and paste their unique webcal URL into Google Calendar, Apple Calendar, or Outlook — matches appear automatically and stay current. It's a solo-maintained tool built by Roy Hillel for personal use, currently live in production.
+
+**Core Value:** A subscribed user's calendar always shows accurate upcoming match times — automatically, without manual effort.
+
+### Constraints
+
+- **API quota**: SportRadar trial — 1,000 req/day, 1 req/sec. Sync cadence (5h cron) is safe; avoid running bootstrap + multiple manual syncs same day.
+- **Tech stack**: Next.js 14 + Supabase + Vercel — locked in for continuity with existing codebase
+- **Solo maintenance**: Roy is the only developer; changes should be minimal-footprint and well-documented
+- **Trial API tier**: Some leagues (e.g., Israeli Premier League) may have incomplete fixture data; paid tier would improve coverage
+<!-- GSD:project-end -->
+
+<!-- GSD:stack-start source:STACK.md -->
+## Technology Stack
+
+Technology stack not yet documented. Will populate after codebase mapping or first phase.
+<!-- GSD:stack-end -->
+
+<!-- GSD:conventions-start source:CONVENTIONS.md -->
+## Conventions
+
+Conventions not yet established. Will populate as patterns emerge during development.
+<!-- GSD:conventions-end -->
+
+<!-- GSD:architecture-start source:ARCHITECTURE.md -->
+## Architecture
+
+Architecture not yet mapped. Follow existing patterns found in the codebase.
+<!-- GSD:architecture-end -->
+
+<!-- GSD:workflow-start source:GSD defaults -->
+## GSD Workflow Enforcement
+
+Before using Edit, Write, or other file-changing tools, start work through a GSD command so planning artifacts and execution context stay in sync.
+
+Use these entry points:
+- `/gsd:quick` for small fixes, doc updates, and ad-hoc tasks
+- `/gsd:debug` for investigation and bug fixing
+- `/gsd:execute-phase` for planned phase work
+
+Do not make direct repo edits outside a GSD workflow unless the user explicitly asks to bypass it.
+<!-- GSD:workflow-end -->
+
+<!-- GSD:profile-start -->
+## Developer Profile
+
+> Profile not yet configured. Run `/gsd:profile-user` to generate your developer profile.
+> This section is managed by `generate-claude-profile` -- do not edit manually.
+<!-- GSD:profile-end -->

@@ -65,19 +65,19 @@ Deferred to a future milestone. Tracked but not in current roadmap.
 
 Which phases cover which requirements. Updated during roadmap creation.
 
-| Requirement | Phase | Status |
-|-------------|-------|--------|
-| DATA-01 | Phase 1 | Pending |
-| DATA-02 | Phase 1 | Pending |
-| DATA-03 | Phase 1 | Pending |
-| DATA-04 | Phase 1 | Pending |
-| PROD-01 | Phase 1 | Pending |
-| PROD-02 | Phase 1 | Pending |
-| PROD-03 | Phase 1 | Pending |
-| QUOTA-01 | Phase 2 | Pending |
-| QUOTA-02 | Phase 2 | Pending |
-| CODE-01 | Phase 2 | Pending |
-| CODE-02 | Phase 2 | Pending |
+| Requirement | Phase | Plan | Status |
+|-------------|-------|------|--------|
+| DATA-01 | Phase 1 | Plan 1.1 | Pending |
+| DATA-02 | Phase 1 | Plan 1.1 | Pending |
+| DATA-03 | Phase 1 | Plan 1.2 | Pending |
+| DATA-04 | Phase 1 | Plan 1.2 | Pending |
+| PROD-01 | Phase 1 | Plan 1.3 | Pending |
+| PROD-02 | Phase 1 | Plan 1.3 | Pending |
+| PROD-03 | Phase 1 | Plan 1.3 | Pending |
+| QUOTA-01 | Phase 2 | Plan 2.1 | Pending |
+| QUOTA-02 | Phase 2 | Plan 2.3 | Pending |
+| CODE-01 | Phase 2 | Plan 2.3 | Pending |
+| CODE-02 | Phase 2 | Plan 2.2 | Pending |
 
 **Coverage:**
 - v1 requirements: 11 total
