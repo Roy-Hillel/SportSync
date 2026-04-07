@@ -16,7 +16,7 @@ export default async function LandingPage() {
           <div className="flex items-center justify-center gap-2.5">
             <CalendarCheck className="w-9 h-9" style={{ color: "var(--accent-brand)" }} strokeWidth={1.75} />
             <h1 className="text-4xl font-bold tracking-tight text-zinc-900">
-              Sport<span style={{ color: "var(--accent-brand)" }}>Sync-local</span>
+              Sport<span style={{ color: "var(--accent-brand)" }}>Sync</span>
             </h1>
           </div>
           <p className="text-base text-zinc-500 leading-relaxed">
