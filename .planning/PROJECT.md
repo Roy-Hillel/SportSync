@@ -42,13 +42,14 @@ These features are shipped and working in production:
 
 ### Active
 
-Open issues and quality improvements to address:
+Current migration scope (v2.0 API-Football Migration):
 
-- [ ] Israeli league teams (Maccabi Haifa, Maccabi Tel Aviv) return no future fixtures — investigate competition-schedule endpoint as alternative to competitor endpoint
-- [ ] Verify Real Madrid subscription now returns LaLiga men's events (not women's) after fix
-- [ ] Confirm production `subscribable_entities` DB is seeded (dev and prod share same DB, likely OK but unverified)
-- [ ] Document SportRadar trial quota guard: 1,000 req/day; bootstrap uses ~778; warn users not to re-run bootstrap and sync on same day
-- [ ] Add multi-sport support pathway (currently soccer-only; SportsDataProvider interface is already in place)
+- [ ] Implement `ApiFootballProvider` with Zod schemas for fixture/league/team response shapes
+- [ ] Update bootstrap script to seed from API-Football (`/leagues`, `/teams?league&season`)
+- [ ] Re-seed `subscribable_entities` with API-Football provider IDs (e.g., Maccabi Haifa `4195`, Ligat Ha'al `383`)
+- [ ] Clear and re-populate `sport_events` after re-seed
+- [ ] Remap existing user subscriptions from SportRadar entity IDs to API-Football entity IDs
+- [ ] Update env vars (`API_FOOTBALL_KEY`, `SPORTS_PROVIDER`) and remove 1.1s rate-limit delay
 
 ### Out of Scope
 
