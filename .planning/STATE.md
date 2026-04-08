@@ -20,6 +20,10 @@ See: .planning/PROJECT.md (updated 2026-04-08)
 |-------|------|--------|-----------|
 | 1 | Data & Production Verification (v1.0) | Superseded | — |
 | 2 | Code Quality & Quota Safety (v1.0) | Superseded | — |
+| 3 | Provider Implementation (v2.0) | Pending | — |
+| 4 | Bootstrap & Entity Re-seed (v2.0) | Pending | — |
+| 5 | Data Migration & Subscription Remapping (v2.0) | Pending | — |
+| 6 | Cutover & Validation (v2.0) | Pending | — |
 
 > v1.0 phases 1 and 2 were superseded by the API-Football migration decision. The Israeli league, Real Madrid verification, and orphan cleanup tasks are all resolved by migrating to API-Football Pro tier.
 
