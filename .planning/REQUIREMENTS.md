@@ -120,32 +120,32 @@ Deferred to a future milestone. Tracked but not in current roadmap.
 
 Which phases cover which requirements. Updated during roadmap creation.
 
-| Requirement | Phase | Status |
-|-------------|-------|--------|
-| PROV-01 | TBD | Pending |
-| PROV-02 | TBD | Pending |
-| PROV-03 | TBD | Pending |
-| PROV-04 | TBD | Pending |
-| PROV-05 | TBD | Pending |
-| PROV-06 | TBD | Pending |
-| PROV-07 | TBD | Pending |
-| SEED-01 | TBD | Pending |
-| SEED-02 | TBD | Pending |
-| SEED-03 | TBD | Pending |
-| SEED-04 | TBD | Pending |
-| MIGR-01 | TBD | Pending |
-| MIGR-02 | TBD | Pending |
-| MIGR-03 | TBD | Pending |
-| MIGR-04 | TBD | Pending |
-| CUTOVER-01 | TBD | Pending |
-| CUTOVER-02 | TBD | Pending |
-| CUTOVER-03 | TBD | Pending |
-| CUTOVER-04 | TBD | Pending |
+| Requirement | Phase | Plan | Status |
+|-------------|-------|------|--------|
+| PROV-01 | Phase 3 | Plan 3.1 | Pending |
+| PROV-02 | Phase 3 | Plan 3.1 | Pending |
+| PROV-03 | Phase 3 | Plan 3.1 | Pending |
+| PROV-04 | Phase 3 | Plan 3.1 | Pending |
+| PROV-05 | Phase 3 | Plan 3.1 | Pending |
+| PROV-06 | Phase 3 | Plan 3.2 | Pending |
+| PROV-07 | Phase 3 | Plan 3.2 | Pending |
+| SEED-01 | Phase 4 | Plan 4.1 | Pending |
+| SEED-02 | Phase 4 | Plan 4.1 | Pending |
+| SEED-03 | Phase 4 | Plan 4.1 | Pending |
+| SEED-04 | Phase 4 | Plan 4.1 | Pending |
+| MIGR-01 | Phase 5 | Plan 5.1 | Pending |
+| MIGR-02 | Phase 5 | Plan 5.1 | Pending |
+| MIGR-03 | Phase 5 | Plan 5.2 | Pending |
+| MIGR-04 | Phase 5 | Plan 5.2 | Pending |
+| CUTOVER-01 | Phase 6 | Plan 6.1 | Pending |
+| CUTOVER-02 | Phase 6 | Plan 6.1 | Pending |
+| CUTOVER-03 | Phase 6 | Plan 6.1 | Pending |
+| CUTOVER-04 | Phase 6 | Plan 6.2 | Pending |
 
 **Coverage:**
 - v2.0 requirements: 19 total
-- Mapped to phases: 0 (roadmap pending)
-- Unmapped: 19
+- Mapped to phases: 19
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-03-27*
