@@ -109,9 +109,11 @@ Current migration scope (v2.0 API-Football Migration):
 | Hash-based change detection | Skip DB writes when event data unchanged | ✓ Good |
 | Lazy DB init via Proxy | Fixes ES module import hoisting issue in bootstrap scripts | ✓ Good |
 | `seasons[seasons.length - 1]` for current season | SportRadar returns seasons oldest-first | ✓ Good |
-| 1.1s delay between entity syncs | Respects SportRadar 1 req/sec rate limit | ✓ Good |
+| 1.1s delay between entity syncs | Respects SportRadar 1 req/sec rate limit | ✗ Removing — API-Football has no per-second limit |
 | Gender/age suffix in display names | Prevents ambiguous search results (Real Madrid men vs women vs U19) | ✓ Good |
-| Single shared DB for dev and prod | Simplicity for solo dev; bootstrap only needed once | — Pending review |
+| Single shared DB for dev and prod | Simplicity for solo dev; bootstrap only needed once | ✓ Good |
+| Migrate to API-Football (not stay on SportRadar) | SportRadar trial quota issues; API-Football Pro validated and active | ✓ Decided 2026-04-08 |
+| Use `SportsDataProvider` interface for swap | Interface was designed for exactly this migration | ✓ Good |
 
 ## Evolution
 
