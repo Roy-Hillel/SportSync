@@ -2,37 +2,52 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-27)
+See: .planning/PROJECT.md (updated 2026-04-08)
 
 **Core value:** A subscribed user's calendar always shows accurate upcoming match times — automatically, without manual effort.
-**Current focus:** Phase 1 — Data & Production Verification
+**Current focus:** Milestone v2.0 — API-Football Migration (defining requirements, roadmap pending)
 
 ## Current Phase
 
-**Phase 1: Data & Production Verification**
-- Status: Not started
-- Plans: 3 total (1.1 Israeli League, 1.2 Real Madrid events, 1.3 Production health)
-- Next action: `/gsd:plan-phase 1`
+**Not started — defining requirements**
+- Status: Requirements defined, roadmap being created
+- Milestone: v2.0 API-Football Migration
+- Next action: `/gsd:plan-phase 3` (phases 1-2 were v1.0)
 
 ## Phase History
 
 | Phase | Name | Status | Completed |
 |-------|------|--------|-----------|
-| 1 | Data & Production Verification | Pending | — |
-| 2 | Code Quality & Quota Safety | Pending | — |
+| 1 | Data & Production Verification (v1.0) | Superseded | — |
+| 2 | Code Quality & Quota Safety (v1.0) | Superseded | — |
+
+> v1.0 phases 1 and 2 were superseded by the API-Football migration decision. The Israeli league, Real Madrid verification, and orphan cleanup tasks are all resolved by migrating to API-Football Pro tier.
 
 ## Key Context
 
 - Production URL: https://sport-sync-lac.vercel.app
 - Supabase project ref: see `.mcp.json` (gitignored)
-- SportRadar: trial tier, 1,000 req/day, resets midnight UTC
+- API-Football Pro: active until 2026-05-08, 7,500 req/day, 300 req/min
+- API-Football key: `API_FOOTBALL_KEY` in `.env.local`
+- Maccabi Haifa: team ID `4195`, league `383` (Ligat Ha'al), season `2025`
 - Cron: `0 */5 * * *` on Vercel
+
+## Accumulated Context
+
+- `SportsDataProvider` interface already exists at `src/lib/providers/types.ts`
+- Current SportRadar provider at `src/lib/providers/sportradar/`
+- Sync engine at `src/lib/sync/engine.ts` — calls provider methods
+- Bootstrap at `src/lib/bootstrap/seed-entities.ts`
+- `subscribable_entities` table: `provider_id`, `provider`, `entity_type`, `display_name`, `logo_url`, `country`, `parent_provider_id`
+- `sport_events` table: `provider_id`, `provider`, `home_team_provider_id`, `away_team_provider_id`, `competition_provider_id`, `season_provider_id`
+- `SPORTS_PROVIDER` env var controls which provider is loaded
 
 ## Last Session
 
-- Date: 2026-03-27
-- Action: Project initialized with GSD
-- Artifacts created: PROJECT.md, config.json, REQUIREMENTS.md, ROADMAP.md, STATE.md
+- Date: 2026-04-08
+- Action: Milestone v2.0 (API-Football Migration) initialized
+- Artifacts created/updated: PROJECT.md, STATE.md, REQUIREMENTS.md, ROADMAP.md
 
 ---
 *State initialized: 2026-03-27*
+*Last updated: 2026-04-08 — Milestone v2.0 started*
