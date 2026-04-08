@@ -62,31 +62,35 @@ Current migration scope (v2.0 API-Football Migration):
 
 ## Context
 
-**Production state (as of 2026-03-27):**
+**Production state (as of 2026-04-08):**
 - Live at https://sport-sync-lac.vercel.app
 - Single production user (Roy)
 - Active subscriptions: UEFA Champions League, Maccabi Haifa FC, Premier League, Real Madrid (men)
-- ~11k entities seeded: 1,265 competitions + ~10,176 teams (999 with W suffix)
-- 13 Champions League events in DB (some TBD bracket names), 0 Israeli league events
+- SportRadar trial quota/subscription issues → migrating to API-Football Pro ($19/month, 7,500 req/day)
+- API-Football Pro plan active until 2026-05-08; key validated with real API calls
 
-**Known data issues:**
-- Israeli Premier League fixture data appears incomplete on SportRadar trial tier — competitor endpoint returns only past results; competition-schedule endpoint not yet tested for this
-- Champions League QFs/SFs use placeholder team names (WQF1, WSF2 etc.) until brackets fill in — auto-resolves on future syncs
-- 10 sport_events rows may have incorrect competition_name from earlier bug (women's team was subscribed); verify after next sync
+**Validated API-Football facts (from real calls, 2026-04-08):**
+- API key: goes in `.env.local` as `API_FOOTBALL_KEY` (value: `7f44654a2da7324433758662bcf46323`)
+- Maccabi Haifa: team ID `4195`, confirmed 2 upcoming fixtures
+- Ligat Ha'al: league ID `383`, current season year `2025`
+- Rate limits: 300 req/min on Pro (no per-second limit) — remove 1.1s delay
+- `fixture.venue.id` can be `null` on some fixtures
+- `league.flag` is `null` for international competitions (Champions League)
+- `league.season` is an integer year (e.g. `2025`), not a string ID
 
 **Tech environment:**
 - Next.js 14 App Router + TypeScript
 - Auth.js v5 (Google OAuth, JWT sessions)
 - Supabase (Postgres) via Drizzle ORM — lazy DB init via Proxy pattern
-- SportRadar Soccer API v4, trial key — 1 req/sec, 1,000 req/day
+- API-Football v3 (migrating from SportRadar Soccer API v4)
 - Vercel free tier — cron at `0 */5 * * *`
 - Provider abstraction in place (`SportsDataProvider` interface, `SPORTS_PROVIDER` env var)
 
-**Critical API knowledge (hard-won):**
-- Competitor schedule response shape: `{ schedules: [{ sport_event, sport_event_status }] }` (NOT `sport_events[]`)
-- Competition seasons ordered oldest-first — always use `seasons[seasons.length - 1]`
-- Competition name lives at `sport_event.sport_event_context.competition.name` (not `tournament`)
-- Rate limiting: 1.1s delay between entity syncs prevents 429s
+**Critical API-Football knowledge:**
+- Fixture response shape confirmed (see full context doc)
+- Use `?league=383&season=2025` directly — no `seasons[seasons.length-1]` hack needed
+- `league.season` is integer year, not string ID
+- Bootstrap: `GET /leagues` for competitions, `GET /teams?league&season` for teams
 
 ## Constraints
 
