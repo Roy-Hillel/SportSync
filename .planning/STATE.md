@@ -9,10 +9,10 @@ See: .planning/PROJECT.md (updated 2026-04-08)
 
 ## Current Phase
 
-**Not started — defining requirements**
-- Status: Requirements defined, roadmap being created
+**Phase 3: Provider Implementation** — Not started
+- Status: Ready to plan
 - Milestone: v2.0 API-Football Migration
-- Next action: `/gsd:plan-phase 3` (phases 1-2 were v1.0)
+- Next action: `/gsd:plan-phase 3`
 
 ## Phase History
 
