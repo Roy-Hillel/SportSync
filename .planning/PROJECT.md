@@ -94,10 +94,11 @@ Current migration scope (v2.0 API-Football Migration):
 
 ## Constraints
 
-- **API quota**: SportRadar trial — 1,000 req/day, 1 req/sec. Sync cadence (5h cron) is safe; avoid running bootstrap + multiple manual syncs same day.
+- **API quota**: API-Football Pro — 7,500 req/day, 300 req/min. No per-second limit. Plan active until 2026-05-08.
 - **Tech stack**: Next.js 14 + Supabase + Vercel — locked in for continuity with existing codebase
 - **Solo maintenance**: Roy is the only developer; changes should be minimal-footprint and well-documented
-- **Trial API tier**: Some leagues (e.g., Israeli Premier League) may have incomplete fixture data; paid tier would improve coverage
+- **Provider abstraction**: `SportsDataProvider` interface already exists — migration must implement it exactly, not redesign it
+- **DB migration**: Provider IDs change completely (SportRadar `sr:competitor:2829` → API-Football `529`); full re-seed + subscription remapping required
 
 ## Key Decisions
 
