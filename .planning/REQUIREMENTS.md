@@ -50,6 +50,23 @@ Deferred to a future milestone. Tracked but not in current roadmap.
 - **API-01**: App is migrated to SportRadar paid tier — unlocking higher rate limits and full fixture coverage (e.g., Israeli league)
 - **API-02**: Rate limiting configuration is dynamic (env var), not hardcoded 1.1s delay
 
+### Post-Match Score Updates
+
+- **SCORE-01**: After a match ends, the calendar event is updated to include the final score in the event title or description (e.g., "Real Madrid 3–1 Barcelona")
+
+### Per-Subscription Time Ahead Override
+
+- **TIMEAHEAD-01**: Each subscription can override the user's global time-ahead setting — so a user can subscribe to Champions League events 3 months ahead but LaLiga only 2 weeks ahead
+
+### Conditional Subscription Filters
+
+- **FILTER-01**: User can subscribe to a competition starting from a specific stage (e.g., Champions League from Round of 16 onwards)
+- **FILTER-02**: User can subscribe to a competition filtered by team rank (e.g., La Liga — top 10 teams only)
+
+### Subscription Sharing
+
+- **SHARE-01**: User can export a subscription as a shareable link or code that another user can import — no need to manually recreate the same subscription
+
 ## Out of Scope
 
 | Feature | Reason |
