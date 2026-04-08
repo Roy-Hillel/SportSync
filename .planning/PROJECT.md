@@ -1,5 +1,19 @@
 # SportSync
 
+## Current Milestone: v2.0 API-Football Migration
+
+**Goal:** Replace SportRadar with API-Football as the live data provider — implementing the new provider, re-seeding all entities, migrating sport_events, and remapping user subscriptions to the new provider ID space.
+
+**Target features:**
+- New `ApiFootballProvider` implementing the existing `SportsDataProvider` interface with Zod schemas for API-Football response shapes
+- Updated bootstrap script using API-Football endpoints (`GET /leagues`, `GET /teams?league&season`)
+- Full re-seed of `subscribable_entities` (provider IDs change from SportRadar format to API-Football integer IDs)
+- Clear and re-populate `sport_events` after re-seed
+- User subscription remapping (old SportRadar entity IDs → new API-Football IDs)
+- Env var updates (`API_FOOTBALL_KEY`, `SPORTS_PROVIDER`) and removal of 1.1s per-second delay
+
+---
+
 ## What This Is
 
 SportSync is a personal web app that automatically syncs soccer match schedules into any calendar app via a personal iCal feed. Users sign in with Google, subscribe to teams and competitions, and paste their unique webcal URL into Google Calendar, Apple Calendar, or Outlook — matches appear automatically and stay current. It's a solo-maintained tool built by Roy Hillel for personal use, currently live in production.
