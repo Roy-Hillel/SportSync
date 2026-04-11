@@ -15,7 +15,11 @@ export default async function DashboardPage() {
   if (!session?.user?.email) redirect("/");
 
   const [user] = await db
-    .select({ id: users.id, calendarToken: users.calendarToken, syncWindowWeeks: users.syncWindowWeeks })
+    .select({
+      id: users.id,
+      calendarToken: users.calendarToken,
+      syncWindowWeeks: users.syncWindowWeeks,
+    })
     .from(users)
     .where(eq(users.email, session.user.email))
     .limit(1);
@@ -35,7 +39,10 @@ export default async function DashboardPage() {
       },
     })
     .from(subscriptions)
-    .innerJoin(subscribableEntities, eq(subscriptions.entityId, subscribableEntities.id))
+    .innerJoin(
+      subscribableEntities,
+      eq(subscriptions.entityId, subscribableEntities.id),
+    )
     .where(eq(subscriptions.userId, user.id))
     .orderBy(subscriptions.createdAt);
 
@@ -49,7 +56,7 @@ export default async function DashboardPage() {
       <header className="bg-white border-b border-zinc-200 sticky top-0 z-10">
         <div className="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between">
           <span className="text-lg font-bold tracking-tight text-zinc-900">
-            Sport<span style={{ color: "var(--accent-brand)" }}>Sync-local</span>
+            Sport<span style={{ color: "var(--accent-brand)" }}>Sync</span>
           </span>
           <div className="flex items-center gap-1">
             <span className="text-xs text-zinc-400 mr-2 hidden sm:block">
