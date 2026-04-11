@@ -105,7 +105,7 @@ async function upsertEntities(provider: string, entities: ProviderEntity[]) {
       .insert(subscribableEntities)
       .values(batch)
       .onConflictDoUpdate({
-        target: [subscribableEntities.providerId, subscribableEntities.provider],
+        target: [subscribableEntities.providerId, subscribableEntities.provider, subscribableEntities.entityType],
         set: {
           displayName: sql`excluded.display_name`,
           logoUrl: sql`excluded.logo_url`,
