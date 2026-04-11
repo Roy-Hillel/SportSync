@@ -1,107 +1,194 @@
-# Roadmap: SportSync — Maintenance Milestone v1
+# Roadmap: SportSync — Milestone v2.0 API-Football Migration
 
-**Created:** 2026-03-27
-**Milestone:** Production Health & Data Integrity
+**Created:** 2026-04-08
+**Milestone:** API-Football Migration
 **Granularity:** Coarse
-**Total Phases:** 2
-**Requirements covered:** 11/11 ✓
+**Total Phases:** 4 (Phases 3–6, continuing from v1.0's phases 1–2)
+**Requirements covered:** 19/19 ✓
 
 ---
 
-## Phase 1: Data & Production Verification
+## Phase 3: Provider Implementation
 
-**Goal:** Confirm the production app is healthy, all subscriptions return correct data, and known data bugs are diagnosed and resolved.
+**Goal:** Build the `ApiFootballProvider` class that fully implements the existing `SportsDataProvider` interface, with Zod-validated response schemas and correct env var wiring.
 
-**Requirements:** DATA-01, DATA-02, DATA-03, DATA-04, PROD-01, PROD-02, PROD-03
+**Requirements:** PROV-01, PROV-02, PROV-03, PROV-04, PROV-05, PROV-06, PROV-07
 
 **Plans:**
 
-### Plan 1.1 — Israeli League Investigation
-Investigate whether the competition-schedule endpoint (`/competitions/{id}/seasons.json` → season schedule) returns future fixtures for Israeli Premier League teams where the competitor endpoint only returns past results. Test with Maccabi Haifa (`sr:competitor:5197`) and Maccabi Tel Aviv (`sr:competitor:5198`).
+### Plan 3.1 — ApiFootballProvider core
+
+Implement `src/lib/providers/api-football/index.ts` (and supporting files) that implements the `SportsDataProvider` interface.
 
 Tasks:
-- Identify the Israeli Premier League competition ID (search `subscribable_entities` for "Israel" competitions)
-- Fetch competition season schedule and check for future fixtures
-- If future fixtures found: update sync engine to prefer competition-schedule for entities where competitor-schedule returns 0 future events
-- If still empty: document that Israeli league fixture data is not available on trial tier; add note to ENGINEERING_NOTES.md
+- Read `src/lib/providers/types.ts` — understand the full interface contract
+- Read `src/lib/providers/sportradar/` — understand existing implementation pattern
+- Create `src/lib/providers/api-football/` directory with:
+  - `index.ts` — `ApiFootballProvider` class implementing `SportsDataProvider`
+  - `schemas.ts` — Zod schemas for fixture, league, team response shapes
+  - `client.ts` — HTTP client using `API_FOOTBALL_KEY` env var, `x-apisports-key` header
+- Handle nullable fields: `fixture.venue.id`, `league.flag`, `goals.home/away`
+- Use `?league=<id>&season=<year>` query params directly (no seasons array hack)
+- Remove 1.1s per-second delay — API-Football limits are per-minute only
 
 **UI hint**: no
 
-### Plan 1.2 — Real Madrid & event data verification
-Verify `sport_events` rows are correct after Real Madrid subscription fix. Confirm `competition_name` shows LaLiga matches, not women's competitions.
+### Plan 3.2 — Provider registration and env var wiring
+
+Wire the new provider into the existing provider-loading mechanism.
 
 Tasks:
-- Query `sport_events` where `home_team_provider_id = 'sr:competitor:2829'` OR `away_team_provider_id = 'sr:competitor:2829'`
-- Confirm `competition_name` = "LaLiga" (or equivalent) for all returned rows
-- If any rows show women's competitions: delete or correct them; trigger a fresh sync
-- Document result in ENGINEERING_NOTES.md open questions section
-
-**UI hint**: no
-
-### Plan 1.3 — Production DB health check
-Verify production `subscribable_entities` is seeded, review `sync_log` for recent errors, and confirm Premier League subscription returns events.
-
-Tasks:
-- Query count of `subscribable_entities` by `entity_type` — confirm 1,265+ competitions and 10k+ teams
-- Query `sync_log` for last 10 entries — check for errors or 429 patterns
-- Confirm at least 1 future event exists in `sport_events` for Premier League (`sr:competition:17`)
-- Document findings; if sync_log shows issues, investigate and resolve
+- Update `src/lib/providers/index.ts` (or wherever `SPORTS_PROVIDER` switch lives) to load `ApiFootballProvider` when `SPORTS_PROVIDER=api-football`
+- Add `API_FOOTBALL_KEY` to `.env.local` (documented) and Vercel environment variables
+- Update `SPORTS_PROVIDER` to `api-football` in `.env.local`
+- Verify `SPORTS_PROVIDER=sportradar` still loads the old provider (fallback intact)
+- Add type safety: throw clear error if `API_FOOTBALL_KEY` is missing
 
 **UI hint**: no
 
 **Success criteria:**
-1. Israeli league investigation is complete and documented — either fixtures are being synced or a clear explanation exists for why they're not
-2. `sport_events` for Real Madrid (sr:competitor:2829) shows only LaLiga competition events — no women's competition rows
-3. `subscribable_entities` has 1,265+ competitions and 10k+ teams in production
-4. `sync_log` has at least one recent successful sync with no persistent 429 errors
-5. Premier League has at least 1 future event in `sport_events`
+1. `ApiFootballProvider` instantiates without error when `API_FOOTBALL_KEY` is set
+2. All `SportsDataProvider` interface methods are implemented (TypeScript compiles cleanly)
+3. Zod schemas parse a real API-Football fixture response without throwing (test with the confirmed response shape)
+4. `SPORTS_PROVIDER=api-football` loads the new provider; `SPORTS_PROVIDER=sportradar` still loads the old one
+5. Nullable fields (`venue.id`, `league.flag`) do not cause runtime errors
 
 ---
 
-## Phase 2: Code Quality & Quota Safety
+## Phase 4: Bootstrap & Entity Re-seed
 
-**Goal:** Clean up documentation, add quota visibility, remove orphaned data, and ensure the codebase is well-documented for future maintenance.
+**Goal:** Update the bootstrap script to seed `subscribable_entities` from API-Football endpoints and run a full re-seed in production.
 
-**Requirements:** QUOTA-01, QUOTA-02, CODE-01, CODE-02
+**Requirements:** SEED-01, SEED-02, SEED-03, SEED-04
 
 **Plans:**
 
-### Plan 2.1 — API quota visibility
-Make SportRadar daily quota usage visible so Roy can check usage before running bootstrap or extra manual syncs.
+### Plan 4.1 — Update bootstrap script for API-Football
+
+Rewrite `src/lib/bootstrap/seed-entities.ts` to use API-Football's `GET /leagues` and `GET /teams?league&season` endpoints.
 
 Tasks:
-- Add a `/api/quota-status` endpoint (or integrate into dashboard) that shows estimated daily API calls used based on `sync_log` entries from the current UTC day
-- Add a warning banner in the Sync Now UI if estimated usage is above 800 requests for the day
-- Update README/ENGINEERING_NOTES with quota guidance
-
-**UI hint**: yes
-
-### Plan 2.2 — Orphaned event cleanup
-Identify and clean up `sport_events` rows that were created for subscriptions that no longer exist (e.g., Real Madrid women's events from the old subscription).
-
-Tasks:
-- Write a query that finds `sport_events` rows whose `competition_provider_id`, `home_team_provider_id`, and `away_team_provider_id` do not match any currently active subscription's tracked entities
-- Review results before deleting — confirm these are genuinely orphaned
-- Add a cleanup script (`npm run db:cleanup-orphans`) that can be run periodically
+- Read existing `seed-entities.ts` to understand current SportRadar seeding logic
+- Replace SportRadar API calls with API-Football calls:
+  - `GET /leagues` → seed competitions (with `provider = 'api-football'`, integer string `provider_id`)
+  - `GET /teams?league=<id>&season=<year>` per league → seed teams
+- Set `provider = 'api-football'` on all written rows
+- Set `provider_id` to API-Football integer IDs as strings (e.g., `"4195"` not `"sr:competitor:4195"`)
+- Set `parent_provider_id` on team rows to the API-Football league ID string
+- Remove per-second rate limit delay (300 req/min is plenty for bootstrap)
+- Preserve gender/age suffix disambiguation logic if needed
 
 **UI hint**: no
 
-### Plan 2.3 — Documentation wrap-up
-Update ENGINEERING_NOTES.md to mark all open questions as resolved/deferred, and add a quota safety warning to bootstrap script.
+### Plan 4.2 — Production re-seed
+
+Clear existing SportRadar entities and run the updated bootstrap.
 
 Tasks:
-- Update ENGINEERING_NOTES.md "Open Questions / Next Steps" section — mark each item as ✓ resolved, ⚠ deferred, or still open with current status
-- Add a prominent comment block to `src/lib/bootstrap/seed-entities.ts` warning about daily quota usage (~778 requests) and advising not to re-run bootstrap on the same day as manual syncs
-- Update README.md with any setup clarifications learned since initial deploy
+- Clear `subscribable_entities` rows where `provider = 'sportradar'`
+- Run bootstrap script against production Supabase
+- Verify row counts: competitions and teams seeded with `provider = 'api-football'`
+- Spot-check: confirm Maccabi Haifa (`4195`), Ligat Ha'al (`383`), Premier League, Real Madrid exist in the table
+- Document new entity IDs for the known subscriptions (needed for MIGR-04 mapping)
 
 **UI hint**: no
 
 **Success criteria:**
-1. Roy can see estimated daily API request count without logging into SportRadar dashboard
-2. Sync Now UI warns when daily quota is approaching limit (>800 requests)
-3. Orphaned `sport_events` rows are identified — either cleaned up or explicitly documented as acceptable
-4. All 5 open questions in ENGINEERING_NOTES.md are marked with current status
-5. Bootstrap script has a quota warning comment visible before running
+1. `subscribable_entities` contains rows with `provider = 'api-football'` after bootstrap
+2. Maccabi Haifa (team ID `4195`) exists in `subscribable_entities`
+3. Ligat Ha'al (league ID `383`) exists in `subscribable_entities`
+4. Bootstrap script completes without quota errors (well within 7,500 req/day limit)
+5. All seeded rows have integer string `provider_id` values (no `sr:` prefix format)
+
+---
+
+## Phase 5: Data Migration & Subscription Remapping
+
+**Goal:** Clear stale SportRadar sport_events, re-populate via a full sync with the new provider, and remap existing user subscriptions to API-Football entity IDs.
+
+**Requirements:** MIGR-01, MIGR-02, MIGR-03, MIGR-04
+
+**Plans:**
+
+### Plan 5.1 — Clear and re-populate sport_events
+
+Remove all SportRadar fixture data and trigger a full sync with the new provider.
+
+Tasks:
+- Delete all `sport_events` rows where `provider = 'sportradar'`
+- Trigger a manual full sync via the new `ApiFootballProvider`
+- Verify `sport_events` rows have `provider = 'api-football'` after sync
+- Verify at least 1 future fixture exists for Maccabi Haifa and Premier League
+
+**UI hint**: no
+
+### Plan 5.2 — User subscription remapping
+
+Remap the production user's subscriptions from SportRadar entity IDs to API-Football entity IDs.
+
+Tasks:
+- Query `user_subscriptions` to see current entity IDs (expect: Champions League, Maccabi Haifa, Premier League, Real Madrid)
+- Build explicit mapping: SportRadar ID → API-Football ID for each active subscription
+  - Maccabi Haifa: `sr:competitor:5197` → `4195`
+  - Premier League: `sr:competition:17` → look up from seeded `subscribable_entities`
+  - UEFA Champions League: `sr:competition:7` → look up from seeded `subscribable_entities`
+  - Real Madrid: `sr:competitor:2829` → look up from seeded `subscribable_entities`
+- Update `user_subscriptions` rows with new `entity_id` values
+- Verify subscriptions now reference valid `subscribable_entities` rows with `provider = 'api-football'`
+
+**UI hint**: no
+
+**Success criteria:**
+1. No `sport_events` rows with `provider = 'sportradar'` remain in DB
+2. `sport_events` contains rows with `provider = 'api-football'` after sync
+3. All active `user_subscriptions` reference `subscribable_entities` rows with `provider = 'api-football'`
+4. No broken foreign key references in `user_subscriptions` after remapping
+5. Maccabi Haifa and Premier League each have at least 1 future event in `sport_events`
+
+---
+
+## Phase 6: Cutover & Validation
+
+**Goal:** Confirm end-to-end production functionality with the new provider — iCal feed works, cron runs cleanly, fallback provider is preserved.
+
+**Requirements:** CUTOVER-01, CUTOVER-02, CUTOVER-03, CUTOVER-04
+
+**Plans:**
+
+### Plan 6.1 — End-to-end validation
+
+Verify the full stack works with API-Football as the live provider.
+
+Tasks:
+- Confirm Vercel environment variables are set: `SPORTS_PROVIDER=api-football`, `API_FOOTBALL_KEY=<value>`
+- Fetch the production iCal feed URL — confirm it returns valid `.ics` with events
+- Check that calendar events include correct team names, dates, and competition names
+- Verify `sync_log` shows a successful cron run with no errors after deploy
+- Manually trigger "Sync Now" in the dashboard — confirm results panel shows synced entities
+
+**UI hint**: no
+
+### Plan 6.2 — Documentation and cleanup
+
+Update ENGINEERING_NOTES.md and finalize the migration.
+
+Tasks:
+- Update `ENGINEERING_NOTES.md` with:
+  - API-Football provider facts (rate limits, response shape quirks, key env var names)
+  - Known entity IDs for current subscriptions (Maccabi Haifa `4195`, Ligat Ha'al `383`, etc.)
+  - Note that SportRadar provider is preserved but inactive
+  - Mark v1.0 open questions as resolved or superseded
+- Confirm `SPORTS_PROVIDER=sportradar` still loads the old provider (inert but available)
+- Add comment in `seed-entities.ts` about API-Football rate limits (300 req/min)
+
+**UI hint**: no
+
+**Success criteria:**
+1. iCal feed returns valid `.ics` with at least 1 future Maccabi Haifa fixture
+2. `sync_log` shows at least 1 successful sync run after cutover with `provider = 'api-football'`
+3. Cron continues to run every 5 hours without errors
+4. `SPORTS_PROVIDER=sportradar` can still be loaded without TypeScript errors (fallback intact)
+5. ENGINEERING_NOTES.md reflects current API-Football state — no stale SportRadar-only notes
 
 ---
 
@@ -109,28 +196,40 @@ Tasks:
 
 | Requirement | Phase | Plan | Status |
 |-------------|-------|------|--------|
-| DATA-01 | Phase 1 | Plan 1.1 | Pending |
-| DATA-02 | Phase 1 | Plan 1.1 | Pending |
-| DATA-03 | Phase 1 | Plan 1.2 | Pending |
-| DATA-04 | Phase 1 | Plan 1.2 | Pending |
-| PROD-01 | Phase 1 | Plan 1.3 | Pending |
-| PROD-02 | Phase 1 | Plan 1.3 | Pending |
-| PROD-03 | Phase 1 | Plan 1.3 | Pending |
-| QUOTA-01 | Phase 2 | Plan 2.1 | Pending |
-| QUOTA-02 | Phase 2 | Plan 2.3 | Pending |
-| CODE-01 | Phase 2 | Plan 2.3 | Pending |
-| CODE-02 | Phase 2 | Plan 2.2 | Pending |
+| PROV-01 | Phase 3 | Plan 3.1 | Pending |
+| PROV-02 | Phase 3 | Plan 3.1 | Pending |
+| PROV-03 | Phase 3 | Plan 3.1 | Pending |
+| PROV-04 | Phase 3 | Plan 3.1 | Pending |
+| PROV-05 | Phase 3 | Plan 3.1 | Pending |
+| PROV-06 | Phase 3 | Plan 3.2 | Pending |
+| PROV-07 | Phase 3 | Plan 3.2 | Pending |
+| SEED-01 | Phase 4 | Plan 4.1 | Pending |
+| SEED-02 | Phase 4 | Plan 4.1 | Pending |
+| SEED-03 | Phase 4 | Plan 4.1 | Pending |
+| SEED-04 | Phase 4 | Plan 4.1 | Pending |
+| MIGR-01 | Phase 5 | Plan 5.1 | Pending |
+| MIGR-02 | Phase 5 | Plan 5.1 | Pending |
+| MIGR-03 | Phase 5 | Plan 5.2 | Pending |
+| MIGR-04 | Phase 5 | Plan 5.2 | Pending |
+| CUTOVER-01 | Phase 6 | Plan 6.1 | Pending |
+| CUTOVER-02 | Phase 6 | Plan 6.1 | Pending |
+| CUTOVER-03 | Phase 6 | Plan 6.1 | Pending |
+| CUTOVER-04 | Phase 6 | Plan 6.2 | Pending |
 
-**Coverage:** 11/11 v1 requirements mapped ✓
+**Coverage:** 19/19 v2.0 requirements mapped ✓
 
 ---
 
-## Backlog (v2 — not in current roadmap)
+## Backlog (v3+ — not in current roadmap)
 
-- SPORT-01/02: Multi-sport support (SportsDataProvider interface already in place)
+- SPORT-01/02: Multi-sport support (SportsDataProvider interface in place)
 - UX-01/02/03: Dashboard improvements (subscription labels, sync timestamps, failure alerts)
-- API-01/02: Paid SportRadar tier migration
+- SCORE-01: Post-match score in calendar event
+- TIMEAHEAD-01: Per-subscription time-ahead override
+- FILTER-01/02: Conditional subscription filters (stage/rank)
+- SHARE-01: Subscription export/import
+- MCP-01: API-Football MCP server for agent use
 
 ---
-*Roadmap created: 2026-03-27*
-*Last updated: 2026-03-27 after initialization*
+*Roadmap created: 2026-04-08*
+*Last updated: 2026-04-08 — Milestone v2.0 initialized*

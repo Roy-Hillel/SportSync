@@ -8,11 +8,13 @@
 
 import type { SportsDataProvider } from "./types";
 import { getSportRadarProvider } from "./sportradar";
+import { getApiFootballProvider } from "./api-football";
 
 export type { SportsDataProvider, ProviderEntity, ProviderEvent, EntityType, EventStatus } from "./types";
 
 const PROVIDERS: Record<string, () => SportsDataProvider> = {
   sportradar: getSportRadarProvider,
+  "api-football": getApiFootballProvider,
 };
 
 export function getActiveProvider(): SportsDataProvider {

@@ -1,36 +1,69 @@
 # Requirements: SportSync
 
 **Defined:** 2026-03-27
+**Updated:** 2026-04-08 — v2.0 API-Football Migration requirements added
 **Core Value:** A subscribed user's calendar always shows accurate upcoming match times — automatically, without manual effort.
 
-## v1 Requirements
+---
 
-Requirements for the current maintenance milestone. Focuses on fixing known data issues, verifying production health, and improving reliability.
+## v2.0 Requirements
 
-### Data Integrity
+Requirements for the API-Football migration milestone. This is a production migration — research phase is complete. Focus is execution.
 
-- [ ] **DATA-01**: Israeli league teams (Maccabi Haifa, Maccabi Tel Aviv) are investigated — determine if competition-schedule endpoint returns future fixtures where competitor endpoint does not
-- [ ] **DATA-02**: If competition-schedule endpoint works for Israeli league, sync engine falls back to it when competitor endpoint returns 0 future events
-- [ ] **DATA-03**: Real Madrid subscription is verified to return LaLiga men's fixtures (not women's competition events) after fix — `competition_name` in DB confirmed correct
-- [ ] **DATA-04**: `sport_events` rows with potentially incorrect `competition_name` from prior women's-team bug are identified and corrected if needed
+### Provider Implementation
 
-### Production Health
+- [ ] **PROV-01**: `ApiFootballProvider` class exists at `src/lib/providers/api-football/` and fully implements the `SportsDataProvider` interface
+- [ ] **PROV-02**: Zod schemas exist for all API-Football response shapes used (fixture, league, team) — runtime-validated on API responses
+- [ ] **PROV-03**: Provider handles `fixture.venue.id = null` and `league.flag = null` without throwing (nullable fields handled gracefully)
+- [ ] **PROV-04**: Provider uses `?league=<id>&season=<year>` query params directly (no `seasons[seasons.length-1]` hack needed)
+- [ ] **PROV-05**: Per-second delay (1.1s) is removed; provider respects API-Football's 300 req/min limit only
+- [ ] **PROV-06**: `SPORTS_PROVIDER` env var set to `api-football` loads `ApiFootballProvider` (existing env var switch mechanism)
+- [ ] **PROV-07**: `API_FOOTBALL_KEY` env var is used for authentication (added to `.env.local` and Vercel environment)
 
-- [ ] **PROD-01**: Production `subscribable_entities` table is confirmed seeded (1,265+ competitions, 10k+ teams) — verified via DB query
-- [ ] **PROD-02**: Cron sync logs (`sync_log` table) are reviewed for recent errors or 429 patterns after production deploy
-- [ ] **PROD-03**: Premier League subscription sync is verified — at least one future event returned after the next successful sync
+### Bootstrap / Entity Seed
 
-### API Quota Safety
+- [ ] **SEED-01**: Bootstrap script (`seed-entities.ts`) is updated to call API-Football `GET /leagues` endpoint to populate competitions
+- [ ] **SEED-02**: Bootstrap script calls `GET /teams?league=<id>&season=<year>` for each seeded league to populate teams
+- [ ] **SEED-03**: `subscribable_entities` rows written by bootstrap have `provider = 'api-football'` and integer string `provider_id` values (e.g., `"4195"` not `"sr:competitor:4195"`)
+- [ ] **SEED-04**: `parent_provider_id` on team rows references the correct API-Football league ID string
 
-- [ ] **QUOTA-01**: SportRadar trial quota usage is visible — either a dashboard check or a log-based count so Roy can see daily usage before running manual syncs or bootstrap
-- [ ] **QUOTA-02**: Bootstrap script (or a README warning) makes clear it should not be re-run on the same day as multiple manual syncs
+### Data Migration
 
-### Code Quality
+- [ ] **MIGR-01**: All existing `sport_events` rows with `provider = 'sportradar'` are cleared before re-population
+- [ ] **MIGR-02**: After re-seed, `sport_events` is re-populated via a full sync run using `ApiFootballProvider`
+- [ ] **MIGR-03**: Existing user subscriptions in `user_subscriptions` are remapped — old SportRadar `entity_id` values replaced with corresponding API-Football entity IDs
+- [ ] **MIGR-04**: A mapping table or script exists that translates known SportRadar IDs to API-Football IDs for the subscriptions currently in production (Champions League, Maccabi Haifa, Premier League, Real Madrid)
 
-- [ ] **CODE-01**: ENGINEERING_NOTES.md open questions (sections 1–5) are each marked as resolved, in-progress, or deferred with current status
-- [ ] **CODE-02**: Any orphaned `sport_events` rows (from subscriptions that were removed) are cleaned up or a cleanup script exists
+### Cutover & Validation
 
-## v2 Requirements
+- [ ] **CUTOVER-01**: After cutover, a manual sync confirms at least 1 future fixture appears for Maccabi Haifa (team ID `4195`) in `sport_events`
+- [ ] **CUTOVER-02**: iCal feed for the production user returns valid events after cutover — no empty feed or errors
+- [ ] **CUTOVER-03**: Vercel cron continues to run every 5 hours using the new provider without errors in `sync_log`
+- [ ] **CUTOVER-04**: Old SportRadar provider code is retained but inert (not deleted) — `SPORTS_PROVIDER=sportradar` can still load it as a fallback
+
+---
+
+## v1.0 Requirements (Superseded)
+
+The following v1.0 requirements are superseded by the API-Football migration. They are archived here for reference.
+
+| Req ID | Description | Superseded By |
+|--------|-------------|---------------|
+| DATA-01 | Israeli league investigation via competition-schedule endpoint | CUTOVER-01 — API-Football Pro confirms fixtures exist for Maccabi Haifa |
+| DATA-02 | Sync engine fallback to competition-schedule | Not needed — API-Football returns complete fixture data on Pro tier |
+| DATA-03 | Real Madrid LaLiga events verification | MIGR-01/02 — full re-seed and re-sync resolves stale data |
+| DATA-04 | Incorrect competition_name rows from prior bug | MIGR-01 — clearing all sportradar sport_events eliminates these |
+| PROD-01 | Confirm subscribable_entities seeded | SEED-01/02/03 — re-seeded from API-Football |
+| PROD-02 | Sync log review for 429 patterns | No longer relevant — rate limits are per-minute, not per-second |
+| PROD-03 | Premier League future events confirmed | CUTOVER-02 — iCal feed validation covers this |
+| QUOTA-01 | SportRadar quota visibility | Not needed — migrating away from SportRadar |
+| QUOTA-02 | Bootstrap quota warning | Not needed — API-Football Pro has 7,500 req/day headroom |
+| CODE-01 | ENGINEERING_NOTES open questions marked | Deferred — update after v2.0 cutover |
+| CODE-02 | Orphaned sport_events cleanup script | MIGR-01 — full clear resolves orphan issue |
+
+---
+
+## Future Requirements (v3+)
 
 Deferred to a future milestone. Tracked but not in current roadmap.
 
@@ -45,10 +78,28 @@ Deferred to a future milestone. Tracked but not in current roadmap.
 - **UX-02**: User can see last-sync timestamp and next-sync time on the dashboard
 - **UX-03**: User receives email notification when sync fails for a subscribed entity
 
-### Paid API Tier
+### Post-Match Score Updates
 
-- **API-01**: App is migrated to SportRadar paid tier — unlocking higher rate limits and full fixture coverage (e.g., Israeli league)
-- **API-02**: Rate limiting configuration is dynamic (env var), not hardcoded 1.1s delay
+- **SCORE-01**: After a match ends, the calendar event is updated to include the final score in the event title or description
+
+### Per-Subscription Time Ahead Override
+
+- **TIMEAHEAD-01**: Each subscription can override the user's global time-ahead setting
+
+### Conditional Subscription Filters
+
+- **FILTER-01**: User can subscribe to a competition starting from a specific stage
+- **FILTER-02**: User can subscribe to a competition filtered by team rank
+
+### Subscription Sharing
+
+- **SHARE-01**: User can export a subscription as a shareable link or code
+
+### API-Football MCP Server
+
+- **MCP-01**: An MCP server wraps the API-Football v3 API for agent use — deferred from v2.0
+
+---
 
 ## Out of Scope
 
@@ -60,6 +111,10 @@ Deferred to a future milestone. Tracked but not in current roadmap.
 | Mobile app | Personal web project; mobile not needed |
 | Multiple calendar feeds per user | Single feed sufficient at current scale |
 | Admin dashboard for multi-user management | Solo-user app; no multi-tenancy planned |
+| API-Football MCP server | Deferred to v3+ |
+| Multi-sport support | Deferred to v3+ |
+
+---
 
 ## Traceability
 
@@ -67,23 +122,31 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Plan | Status |
 |-------------|-------|------|--------|
-| DATA-01 | Phase 1 | Plan 1.1 | Pending |
-| DATA-02 | Phase 1 | Plan 1.1 | Pending |
-| DATA-03 | Phase 1 | Plan 1.2 | Pending |
-| DATA-04 | Phase 1 | Plan 1.2 | Pending |
-| PROD-01 | Phase 1 | Plan 1.3 | Pending |
-| PROD-02 | Phase 1 | Plan 1.3 | Pending |
-| PROD-03 | Phase 1 | Plan 1.3 | Pending |
-| QUOTA-01 | Phase 2 | Plan 2.1 | Pending |
-| QUOTA-02 | Phase 2 | Plan 2.3 | Pending |
-| CODE-01 | Phase 2 | Plan 2.3 | Pending |
-| CODE-02 | Phase 2 | Plan 2.2 | Pending |
+| PROV-01 | Phase 3 | Plan 3.1 | Pending |
+| PROV-02 | Phase 3 | Plan 3.1 | Pending |
+| PROV-03 | Phase 3 | Plan 3.1 | Pending |
+| PROV-04 | Phase 3 | Plan 3.1 | Pending |
+| PROV-05 | Phase 3 | Plan 3.1 | Pending |
+| PROV-06 | Phase 3 | Plan 3.2 | Pending |
+| PROV-07 | Phase 3 | Plan 3.2 | Pending |
+| SEED-01 | Phase 4 | Plan 4.1 | Pending |
+| SEED-02 | Phase 4 | Plan 4.1 | Pending |
+| SEED-03 | Phase 4 | Plan 4.1 | Pending |
+| SEED-04 | Phase 4 | Plan 4.1 | Pending |
+| MIGR-01 | Phase 5 | Plan 5.1 | Pending |
+| MIGR-02 | Phase 5 | Plan 5.1 | Pending |
+| MIGR-03 | Phase 5 | Plan 5.2 | Pending |
+| MIGR-04 | Phase 5 | Plan 5.2 | Pending |
+| CUTOVER-01 | Phase 6 | Plan 6.1 | Pending |
+| CUTOVER-02 | Phase 6 | Plan 6.1 | Pending |
+| CUTOVER-03 | Phase 6 | Plan 6.1 | Pending |
+| CUTOVER-04 | Phase 6 | Plan 6.2 | Pending |
 
 **Coverage:**
-- v1 requirements: 11 total
-- Mapped to phases: 11
+- v2.0 requirements: 19 total
+- Mapped to phases: 19
 - Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-03-27*
-*Last updated: 2026-03-27 after initial definition*
+*Last updated: 2026-04-08 — v2.0 API-Football Migration requirements defined*
