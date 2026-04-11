@@ -75,6 +75,27 @@ function mapFixture(item: ApiFootballFixtureItem): ProviderEvent | null {
 }
 
 // ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Derive the API-Football season year from a reference date.
+ *
+ * API-Football identifies seasons by the year the season STARTED.
+ * European and Israeli leagues start in July/August, so any date before
+ * August belongs to the season that started the previous calendar year.
+ *
+ * Examples:
+ *   April 2026  → season 2025  (2025/26 season)
+ *   October 2025 → season 2025 (2025/26 season)
+ *   September 2026 → season 2026 (2026/27 season)
+ */
+function deriveSeason(date: Date): number {
+  const month = date.getMonth(); // 0 = Jan, 7 = Aug
+  return month < 7 ? date.getFullYear() - 1 : date.getFullYear();
+}
+
+// ---------------------------------------------------------------------------
 // API-Football provider
 // ---------------------------------------------------------------------------
 
