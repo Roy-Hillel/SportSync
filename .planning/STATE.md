@@ -9,7 +9,7 @@ See: .planning/PROJECT.md (updated 2026-04-08)
 
 ## Current Phase
 
-**Milestone v2.0 complete.** No active phase. Next: begin v3.0 milestone or backlog work.
+**Milestone v3.0 — Subscription Filters.** Active. No phase started yet. Next: `gsd:discuss-phase 7` or `gsd:plan-phase 7` to begin Phase 7 (Stage/Round Filter).
 
 ## Phase History
 
