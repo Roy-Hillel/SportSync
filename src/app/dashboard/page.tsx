@@ -89,8 +89,10 @@ export default async function DashboardPage() {
     if (providerIds.length > 0) {
       const EXCLUDED_STATUSES = ["cancelled", "postponed"];
       const now = new Date();
+      const to = addWeeks(now, user.syncWindowWeeks);
 
-      // Fetch all future events then filter in-app to match any subscribed provider ID
+      // Fetch future events within the user's sync window, then filter in-app
+      // to match any subscribed provider ID.
       const futureEvents = await db
         .select({
           id: sportEvents.id,
@@ -105,7 +107,7 @@ export default async function DashboardPage() {
           competitionProviderId: sportEvents.competitionProviderId,
         })
         .from(sportEvents)
-        .where(gt(sportEvents.startTime, now))
+        .where(and(gt(sportEvents.startTime, now), lte(sportEvents.startTime, to)))
         .orderBy(asc(sportEvents.startTime));
 
       const providerIdSet = new Set(providerIds);
