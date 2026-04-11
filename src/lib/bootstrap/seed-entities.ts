@@ -65,8 +65,7 @@ async function seedEntities() {
         teamCount += teams.length;
         process.stdout.write(`  ${comp.displayName}: ${teams.length} teams\n`);
       }
-      // Respect SportRadar trial rate limit (1 req/sec)
-      await sleep(1100);
+      // API-Football: 300 req/min — no per-request delay needed
     } catch (err) {
       errors++;
       process.stdout.write(`  ${comp.displayName}: ERROR — ${err instanceof Error ? err.message : String(err)}\n`);
