@@ -116,7 +116,7 @@ export default function SettingsForm({ syncWindowWeeks, email }: Props) {
           <button
             onClick={deleteAccount}
             disabled={deleting}
-            className="flex items-center gap-2 text-sm text-red-500 hover:text-red-700 disabled:opacity-40 transition-colors text-left"
+            className="flex items-center gap-2 text-sm text-red-500 hover:text-red-700 disabled:opacity-40 transition-colors text-left cursor-pointer"
           >
             <Trash2 className="w-4 h-4 shrink-0" />
             {deleting ? "Deleting…" : "Delete account"}
