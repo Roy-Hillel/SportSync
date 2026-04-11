@@ -8,7 +8,8 @@ import {
   syncLog,
   sportEvents,
 } from "@/lib/db/schema";
-import { eq, isNull, gt, inArray, asc, desc } from "drizzle-orm";
+import { eq, isNull, gt, lte, and, inArray, asc, desc } from "drizzle-orm";
+import { addWeeks } from "@/lib/sync/date-utils";
 import SubscriptionList from "@/components/subscription-list";
 import CalendarInstructions from "@/components/calendar-instructions";
 import AddSubscriptionModal from "@/components/add-subscription-modal";
