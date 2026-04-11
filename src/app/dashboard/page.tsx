@@ -8,7 +8,7 @@ import {
   syncLog,
   sportEvents,
 } from "@/lib/db/schema";
-import { eq, isNull, gt, notInArray, inArray, asc, desc } from "drizzle-orm";
+import { eq, isNull, gt, inArray, asc, desc } from "drizzle-orm";
 import SubscriptionList from "@/components/subscription-list";
 import CalendarInstructions from "@/components/calendar-instructions";
 import AddSubscriptionModal from "@/components/add-subscription-modal";
@@ -65,9 +65,7 @@ export default async function DashboardPage() {
   const lastSyncedAt = lastSyncRow?.completedAt ?? null;
 
   // Upcoming matches relevant to the user's subscriptions
-  const subscribedProviderIds = userSubscriptions.map(
-    (s) => s.entity.id
-  );
+  const subscribedEntityIds = userSubscriptions.map((s) => s.entity.id);
 
   let upcomingMatches: {
     id: string;
@@ -78,14 +76,12 @@ export default async function DashboardPage() {
     venue: string | null;
   }[] = [];
 
-  if (subscribedProviderIds.length > 0) {
-    // Get provider IDs for subscribed entities
+  if (subscribedEntityIds.length > 0) {
+    // Resolve the provider IDs for the subscribed entities
     const entityRows = await db
-      .select({
-        providerId: subscribableEntities.providerId,
-      })
+      .select({ providerId: subscribableEntities.providerId })
       .from(subscribableEntities)
-      .where(inArray(subscribableEntities.id, subscribedProviderIds));
+      .where(inArray(subscribableEntities.id, subscribedEntityIds));
 
     const providerIds = entityRows.map((e) => e.providerId);
 
@@ -93,54 +89,8 @@ export default async function DashboardPage() {
       const EXCLUDED_STATUSES = ["cancelled", "postponed"];
       const now = new Date();
 
-      // Fetch all three match sets in parallel and deduplicate by id
-      const [homeMatches, awayMatches, compMatches] = await Promise.all([
-        db
-          .select({
-            id: sportEvents.id,
-            homeTeamName: sportEvents.homeTeamName,
-            awayTeamName: sportEvents.awayTeamName,
-            competitionName: sportEvents.competitionName,
-            startTime: sportEvents.startTime,
-            venue: sportEvents.venue,
-          })
-          .from(sportEvents)
-          .where(
-            gt(sportEvents.startTime, now)
-          )
-          .orderBy(asc(sportEvents.startTime)),
-        db
-          .select({
-            id: sportEvents.id,
-            homeTeamName: sportEvents.homeTeamName,
-            awayTeamName: sportEvents.awayTeamName,
-            competitionName: sportEvents.competitionName,
-            startTime: sportEvents.startTime,
-            venue: sportEvents.venue,
-          })
-          .from(sportEvents)
-          .where(
-            gt(sportEvents.startTime, now)
-          )
-          .orderBy(asc(sportEvents.startTime)),
-        db
-          .select({
-            id: sportEvents.id,
-            homeTeamName: sportEvents.homeTeamName,
-            awayTeamName: sportEvents.awayTeamName,
-            competitionName: sportEvents.competitionName,
-            startTime: sportEvents.startTime,
-            venue: sportEvents.venue,
-          })
-          .from(sportEvents)
-          .where(
-            gt(sportEvents.startTime, now)
-          )
-          .orderBy(asc(sportEvents.startTime)),
-      ]);
-
-      // Single query filtering relevant events
-      const relevantEvents = await db
+      // Fetch all future events then filter in-app to match any subscribed provider ID
+      const futureEvents = await db
         .select({
           id: sportEvents.id,
           homeTeamName: sportEvents.homeTeamName,
@@ -157,19 +107,16 @@ export default async function DashboardPage() {
         .where(gt(sportEvents.startTime, now))
         .orderBy(asc(sportEvents.startTime));
 
-      // Deduplicate and filter by relevance + status
-      const seen = new Set<string>();
-      upcomingMatches = relevantEvents
+      const providerIdSet = new Set(providerIds);
+
+      upcomingMatches = futureEvents
         .filter((e) => {
           if (EXCLUDED_STATUSES.includes(e.status)) return false;
-          const relevant =
-            (e.homeTeamProviderId !== null && providerIds.includes(e.homeTeamProviderId)) ||
-            (e.awayTeamProviderId !== null && providerIds.includes(e.awayTeamProviderId)) ||
-            (e.competitionProviderId !== null && providerIds.includes(e.competitionProviderId));
-          if (!relevant) return false;
-          if (seen.has(e.id)) return false;
-          seen.add(e.id);
-          return true;
+          return (
+            (e.homeTeamProviderId !== null && providerIdSet.has(e.homeTeamProviderId)) ||
+            (e.awayTeamProviderId !== null && providerIdSet.has(e.awayTeamProviderId)) ||
+            (e.competitionProviderId !== null && providerIdSet.has(e.competitionProviderId))
+          );
         })
         .map((e) => ({
           id: e.id,
@@ -179,11 +126,6 @@ export default async function DashboardPage() {
           startTime: e.startTime,
           venue: e.venue,
         }));
-
-      // Suppress unused variable warnings from the parallel fetch above
-      void homeMatches;
-      void awayMatches;
-      void compMatches;
     }
   }
 
@@ -243,6 +185,28 @@ export default async function DashboardPage() {
             </div>
           </div>
           <SubscriptionList subscriptions={userSubscriptions} />
+          <LastSyncTime lastSyncedAt={lastSyncedAt} />
+        </section>
+
+        {/* Upcoming Matches */}
+        <section className="space-y-3">
+          <div className="flex items-center gap-2">
+            <h2 className="text-xs font-medium tracking-widest text-zinc-400 uppercase">
+              Upcoming Matches
+            </h2>
+            {upcomingMatches.length > 0 && (
+              <span
+                className="text-xs font-medium px-2 py-0.5 rounded-full"
+                style={{
+                  background: "var(--accent-brand-light)",
+                  color: "var(--accent-brand-text)",
+                }}
+              >
+                {upcomingMatches.length}
+              </span>
+            )}
+          </div>
+          <UpcomingMatches matches={upcomingMatches} />
         </section>
       </div>
     </div>
