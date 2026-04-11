@@ -123,6 +123,22 @@ API-Football identifies seasons by the **year the season started**:
 **Cause:** `from.getFullYear()` returns 2026 in April, but the 2025/26 season is identified as `2025`.
 **Fix:** `deriveSeason()` helper: `month < 7 ? year - 1 : year`.
 
+### 8. Summer tournaments (World Cup 2026) returned 0 fixtures
+**Symptom:** Syncing a World Cup subscription returned 0 events — nothing added to `sport_events`.
+**Cause:** `deriveSeason(April 2026)` returns 2025. But the FIFA World Cup 2026 is identified as `season=2026` (the tournament year, not a club season start year). The initial fetch with `season=2025` returns 0 results.
+**Fix:** If the primary fetch returns 0 results, retry with `season + 1`. This handles summer tournaments that use the calendar year as their season ID. See `getSchedule()` in `src/lib/providers/api-football/index.ts`.
+
+### 9. 923 team entities stored with wrong `entity_type='competition'`
+**Symptom:** Post-seed audit found 923 rows where `entity_type='competition'` but `logo_url` pointed to a team logo (`/football/teams/`). E.g., "Maccabi Tel Aviv" had `entity_type='competition'`.
+**Root cause:** Two separate bugs compounding:
+1. **Schema constraint too narrow:** Unique constraint was on `(provider_id, provider)` only. API-Football uses **separate ID namespaces** for leagues and teams — but IDs can collide numerically (e.g., league ID 604 and team ID 604 are different entities). The narrow constraint treated them as the same row.
+2. **`onConflictDoUpdate` missing `entityType` in SET clause:** When the upsert hit the constraint, it updated `displayName`, `logoUrl`, etc. — but never updated `entityType`. So a competition row for league 604 would get overwritten with team 604's display name and logo, but keep `entity_type='competition'`.
+**Fix:**
+- Migration `0001`: Changed unique constraint to `(provider_id, provider, entity_type)` — leagues and teams with the same numeric ID now coexist.
+- `seed-entities.ts`: Updated `onConflictDoUpdate` conflict target to match the new 3-column constraint.
+- Full data wipe + re-seed to clear all contaminated rows (923 affected).
+**Key lesson:** API-Football leagues and teams have independent ID namespaces that can numerically collide. Always include `entity_type` in any uniqueness check.
+
 ---
 
 ## Infrastructure Setup Notes
