@@ -54,9 +54,10 @@ export const subscribableEntities = pgTable(
       .defaultNow(),
   },
   (t) => [
-    unique("subscribable_entities_provider_id_provider").on(
+    unique("subscribable_entities_provider_id_provider_entity_type").on(
       t.providerId,
-      t.provider
+      t.provider,
+      t.entityType
     ),
     index("subscribable_entities_display_name_idx").on(t.displayName),
     index("subscribable_entities_entity_type_idx").on(t.entityType),
