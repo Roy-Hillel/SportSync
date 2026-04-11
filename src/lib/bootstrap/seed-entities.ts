@@ -128,12 +128,12 @@ function sleep(ms: number) {
 // ---------------------------------------------------------------------------
 
 const PRIORITY_COMPETITION_IDS = new Set([
-  "sr:competition:7",   // UEFA Champions League
-  "sr:competition:18",  // UEFA Europa League
-  "sr:competition:682", // UEFA Conference League
-  "sr:competition:1",   // UEFA Euro
-  "sr:competition:16",  // FIFA World Cup
-  "sr:competition:34",  // CONMEBOL Copa América
+  "2",    // UEFA Champions League
+  "3",    // UEFA Europa League
+  "848",  // UEFA Conference League
+  "960",  // UEFA Euro
+  "1",    // FIFA World Cup
+  "9",    // CONMEBOL Copa América
 ]);
 
 const PRIORITY_COUNTRIES = new Set([
