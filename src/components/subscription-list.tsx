@@ -94,7 +94,7 @@ export default function SubscriptionList({ subscriptions }: { subscriptions: Sub
           <button
             onClick={() => remove(sub.id)}
             disabled={removing === sub.id}
-            className="text-xs text-zinc-400 hover:text-red-500 disabled:opacity-40 transition-colors shrink-0"
+            className="text-xs text-zinc-400 hover:text-red-500 disabled:opacity-40 transition-colors shrink-0 cursor-pointer"
           >
             {removing === sub.id ? "Removing…" : "Remove"}
           </button>
