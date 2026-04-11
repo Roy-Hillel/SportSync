@@ -145,35 +145,56 @@ Deferred to a future milestone. Tracked but not in current roadmap.
 
 ## Traceability
 
-Which phases cover which requirements. Updated during roadmap creation.
+### v3.0 Traceability
 
 | Requirement | Phase | Plan | Status |
 |-------------|-------|------|--------|
-| PROV-01 | Phase 3 | Plan 3.1 | Pending |
-| PROV-02 | Phase 3 | Plan 3.1 | Pending |
-| PROV-03 | Phase 3 | Plan 3.1 | Pending |
-| PROV-04 | Phase 3 | Plan 3.1 | Pending |
-| PROV-05 | Phase 3 | Plan 3.1 | Pending |
-| PROV-06 | Phase 3 | Plan 3.2 | Pending |
-| PROV-07 | Phase 3 | Plan 3.2 | Pending |
-| SEED-01 | Phase 4 | Plan 4.1 | Pending |
-| SEED-02 | Phase 4 | Plan 4.1 | Pending |
-| SEED-03 | Phase 4 | Plan 4.1 | Pending |
-| SEED-04 | Phase 4 | Plan 4.1 | Pending |
-| MIGR-01 | Phase 5 | Plan 5.1 | Pending |
-| MIGR-02 | Phase 5 | Plan 5.1 | Pending |
-| MIGR-03 | Phase 5 | Plan 5.2 | Pending |
-| MIGR-04 | Phase 5 | Plan 5.2 | Pending |
-| CUTOVER-01 | Phase 6 | Plan 6.1 | Pending |
-| CUTOVER-02 | Phase 6 | Plan 6.1 | Pending |
-| CUTOVER-03 | Phase 6 | Plan 6.1 | Pending |
-| CUTOVER-04 | Phase 6 | Plan 6.2 | Pending |
+| FILT-01 | Phase 7 | Plan 7.1 | Pending |
+| FILT-02 | Phase 7 | Plan 7.1 | Pending |
+| FILT-03 | Phase 7 | Plan 7.2 | Pending |
+| FILT-04 | Phase 7 | Plan 7.2 | Pending |
+| FILT-05 | Phase 8 | Plan 8.1 | Pending |
+| FILT-06 | Phase 8 | Plan 8.1 | Pending |
+| FILT-07 | Phase 8 | Plan 8.2 | Pending |
+| FILT-08 | Phase 8 | Plan 8.2 | Pending |
+| FILT-09 | Phase 7 | Plan 7.1 | Pending |
+| FILT-10 | Phase 8 | Plan 8.2 | Pending |
+| FILT-11 | Phase 8 | Plan 8.2 | Pending |
+| FILT-12 | Phase 7 | Plan 7.1 | Pending |
+
+**Coverage:**
+- v3.0 requirements: 12 total
+- Mapped to phases: 12
+- Unmapped: 0 ✓
+
+### v2.0 Traceability
+
+| Requirement | Phase | Plan | Status |
+|-------------|-------|------|--------|
+| PROV-01 | Phase 3 | Plan 3.1 | Shipped |
+| PROV-02 | Phase 3 | Plan 3.1 | Shipped |
+| PROV-03 | Phase 3 | Plan 3.1 | Shipped |
+| PROV-04 | Phase 3 | Plan 3.1 | Shipped |
+| PROV-05 | Phase 3 | Plan 3.1 | Shipped |
+| PROV-06 | Phase 3 | Plan 3.2 | Shipped |
+| PROV-07 | Phase 3 | Plan 3.2 | Shipped |
+| SEED-01 | Phase 4 | Plan 4.1 | Shipped |
+| SEED-02 | Phase 4 | Plan 4.1 | Shipped |
+| SEED-03 | Phase 4 | Plan 4.1 | Shipped |
+| SEED-04 | Phase 4 | Plan 4.1 | Shipped |
+| MIGR-01 | Phase 5 | Plan 5.1 | Shipped |
+| MIGR-02 | Phase 5 | Plan 5.1 | Shipped |
+| MIGR-03 | Phase 5 | Plan 5.2 | Shipped |
+| MIGR-04 | Phase 5 | Plan 5.2 | Shipped |
+| CUTOVER-01 | Phase 6 | Plan 6.1 | Shipped |
+| CUTOVER-02 | Phase 6 | Plan 6.1 | Shipped |
+| CUTOVER-03 | Phase 6 | Plan 6.1 | Shipped |
+| CUTOVER-04 | Phase 6 | Plan 6.2 | Shipped |
 
 **Coverage:**
 - v2.0 requirements: 19 total
-- Mapped to phases: 19
-- Unmapped: 0 ✓
+- All shipped ✓
 
 ---
 *Requirements defined: 2026-03-27*
-*Last updated: 2026-04-08 — v2.0 API-Football Migration requirements defined*
+*Last updated: 2026-04-11 — v3.0 Subscription Filters requirements added*
