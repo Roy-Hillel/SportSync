@@ -119,7 +119,7 @@ export default function AddSubscriptionModal() {
                   search(query, f.value);
                 }}
                 className={cn(
-                  "px-3 py-1 text-xs rounded-full border transition-colors duration-150 font-medium",
+                  "px-3 py-1 text-xs rounded-full border transition-colors duration-150 font-medium cursor-pointer",
                   filter === f.value
                     ? "border-[var(--accent-brand)] text-[var(--accent-brand)] bg-[var(--accent-brand-light)]"
                     : "border-zinc-200 text-zinc-500 hover:border-zinc-400"
