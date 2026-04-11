@@ -121,6 +121,9 @@ Current scope (v3.0 Subscription Filters):
 | Single shared DB for dev and prod | Simplicity for solo dev; bootstrap only needed once | ✓ Good |
 | Migrate to API-Football (not stay on SportRadar) | SportRadar trial quota issues; API-Football Pro validated and active | ✓ Decided 2026-04-08 |
 | Use `SportsDataProvider` interface for swap | Interface was designed for exactly this migration | ✓ Good |
+| FILTER-01 and FILTER-02 in same milestone | Both are subscription-time filters; share schema change, UI pattern, and sync hook | ✓ Decided 2026-04-11 |
+| Store `start_round` as text, not enum | Round names vary by competition; text is flexible and matches API return value exactly | ✓ Decided 2026-04-11 |
+| `top_n_teams` fetches standings at sync time (not subscription time) | Standings change during the season; live fetch ensures filter reflects current rankings | ✓ Decided 2026-04-11 |
 
 ## Evolution
 
