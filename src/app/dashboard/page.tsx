@@ -54,6 +54,139 @@ export default async function DashboardPage() {
     .where(eq(subscriptions.userId, user.id))
     .orderBy(subscriptions.createdAt);
 
+  // Last successful sync time
+  const [lastSyncRow] = await db
+    .select({ completedAt: syncLog.completedAt })
+    .from(syncLog)
+    .where(isNull(syncLog.error))
+    .orderBy(desc(syncLog.completedAt))
+    .limit(1);
+
+  const lastSyncedAt = lastSyncRow?.completedAt ?? null;
+
+  // Upcoming matches relevant to the user's subscriptions
+  const subscribedProviderIds = userSubscriptions.map(
+    (s) => s.entity.id
+  );
+
+  let upcomingMatches: {
+    id: string;
+    homeTeamName: string;
+    awayTeamName: string;
+    competitionName: string;
+    startTime: Date;
+    venue: string | null;
+  }[] = [];
+
+  if (subscribedProviderIds.length > 0) {
+    // Get provider IDs for subscribed entities
+    const entityRows = await db
+      .select({
+        providerId: subscribableEntities.providerId,
+      })
+      .from(subscribableEntities)
+      .where(inArray(subscribableEntities.id, subscribedProviderIds));
+
+    const providerIds = entityRows.map((e) => e.providerId);
+
+    if (providerIds.length > 0) {
+      const EXCLUDED_STATUSES = ["cancelled", "postponed"];
+      const now = new Date();
+
+      // Fetch all three match sets in parallel and deduplicate by id
+      const [homeMatches, awayMatches, compMatches] = await Promise.all([
+        db
+          .select({
+            id: sportEvents.id,
+            homeTeamName: sportEvents.homeTeamName,
+            awayTeamName: sportEvents.awayTeamName,
+            competitionName: sportEvents.competitionName,
+            startTime: sportEvents.startTime,
+            venue: sportEvents.venue,
+          })
+          .from(sportEvents)
+          .where(
+            gt(sportEvents.startTime, now)
+          )
+          .orderBy(asc(sportEvents.startTime)),
+        db
+          .select({
+            id: sportEvents.id,
+            homeTeamName: sportEvents.homeTeamName,
+            awayTeamName: sportEvents.awayTeamName,
+            competitionName: sportEvents.competitionName,
+            startTime: sportEvents.startTime,
+            venue: sportEvents.venue,
+          })
+          .from(sportEvents)
+          .where(
+            gt(sportEvents.startTime, now)
+          )
+          .orderBy(asc(sportEvents.startTime)),
+        db
+          .select({
+            id: sportEvents.id,
+            homeTeamName: sportEvents.homeTeamName,
+            awayTeamName: sportEvents.awayTeamName,
+            competitionName: sportEvents.competitionName,
+            startTime: sportEvents.startTime,
+            venue: sportEvents.venue,
+          })
+          .from(sportEvents)
+          .where(
+            gt(sportEvents.startTime, now)
+          )
+          .orderBy(asc(sportEvents.startTime)),
+      ]);
+
+      // Single query filtering relevant events
+      const relevantEvents = await db
+        .select({
+          id: sportEvents.id,
+          homeTeamName: sportEvents.homeTeamName,
+          awayTeamName: sportEvents.awayTeamName,
+          competitionName: sportEvents.competitionName,
+          startTime: sportEvents.startTime,
+          venue: sportEvents.venue,
+          status: sportEvents.status,
+          homeTeamProviderId: sportEvents.homeTeamProviderId,
+          awayTeamProviderId: sportEvents.awayTeamProviderId,
+          competitionProviderId: sportEvents.competitionProviderId,
+        })
+        .from(sportEvents)
+        .where(gt(sportEvents.startTime, now))
+        .orderBy(asc(sportEvents.startTime));
+
+      // Deduplicate and filter by relevance + status
+      const seen = new Set<string>();
+      upcomingMatches = relevantEvents
+        .filter((e) => {
+          if (EXCLUDED_STATUSES.includes(e.status)) return false;
+          const relevant =
+            (e.homeTeamProviderId !== null && providerIds.includes(e.homeTeamProviderId)) ||
+            (e.awayTeamProviderId !== null && providerIds.includes(e.awayTeamProviderId)) ||
+            (e.competitionProviderId !== null && providerIds.includes(e.competitionProviderId));
+          if (!relevant) return false;
+          if (seen.has(e.id)) return false;
+          seen.add(e.id);
+          return true;
+        })
+        .map((e) => ({
+          id: e.id,
+          homeTeamName: e.homeTeamName,
+          awayTeamName: e.awayTeamName,
+          competitionName: e.competitionName,
+          startTime: e.startTime,
+          venue: e.venue,
+        }));
+
+      // Suppress unused variable warnings from the parallel fetch above
+      void homeMatches;
+      void awayMatches;
+      void compMatches;
+    }
+  }
+
   const baseUrl = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
   const calendarUrl = `${baseUrl}/calendar/${user.calendarToken}`;
   const webcalUrl = calendarUrl.replace(/^https?/, "webcal");
