@@ -134,8 +134,8 @@ export class ApiFootballProvider implements SportsDataProvider {
   async listTeamsInCompetition(
     competitionProviderId: string
   ): Promise<ProviderEntity[]> {
-    // Use current calendar year as season — no season ID resolution needed (PROV-04)
-    const season = new Date().getFullYear();
+    // Derive season from current date (PROV-04 — no season ID resolution)
+    const season = deriveSeason(new Date());
 
     const data = await this.client.get(
       "/teams",
@@ -158,7 +158,7 @@ export class ApiFootballProvider implements SportsDataProvider {
     from: Date,
     to: Date
   ): Promise<ProviderEvent[]> {
-    const season = from.getFullYear();
+    const season = deriveSeason(from);
     const fmtFrom = from.toISOString().split("T")[0];
     const fmtTo = to.toISOString().split("T")[0];
 
