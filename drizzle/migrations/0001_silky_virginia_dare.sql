@@ -1,0 +1,2 @@
+ALTER TABLE "subscribable_entities" DROP CONSTRAINT "subscribable_entities_provider_id_provider";--> statement-breakpoint
+ALTER TABLE "subscribable_entities" ADD CONSTRAINT "subscribable_entities_provider_id_provider_entity_type" UNIQUE("provider_id","provider","entity_type");
