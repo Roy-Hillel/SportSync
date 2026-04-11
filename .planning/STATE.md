@@ -28,20 +28,9 @@ See: .planning/PROJECT.md (updated 2026-04-08)
 
 - Production URL: https://sport-sync-lac.vercel.app
 - Supabase project ref: see `.mcp.json` (gitignored)
-- API-Football Pro: active until 2026-05-08, 7,500 req/day, 300 req/min
-- API-Football key: `API_FOOTBALL_KEY` in `.env.local`
-- Maccabi Haifa: team ID `4195`, league `383` (Ligat Ha'al), season `2025`
-- Cron: `0 */5 * * *` on Vercel
-
-## Accumulated Context
-
-- `SportsDataProvider` interface already exists at `src/lib/providers/types.ts`
-- Current SportRadar provider at `src/lib/providers/sportradar/`
-- Sync engine at `src/lib/sync/engine.ts` — calls provider methods
-- Bootstrap at `src/lib/bootstrap/seed-entities.ts`
-- `subscribable_entities` table: `provider_id`, `provider`, `entity_type`, `display_name`, `logo_url`, `country`, `parent_provider_id`
-- `sport_events` table: `provider_id`, `provider`, `home_team_provider_id`, `away_team_provider_id`, `competition_provider_id`, `season_provider_id`
-- `SPORTS_PROVIDER` env var controls which provider is loaded
+- Provider: `api-football` (SPORTS_PROVIDER=api-football in Vercel env)
+- API-Football Pro: active until 2026-05-08 — **renew before this date**
+- Cron: `0 0 * * *` (daily at midnight UTC)
 
 ## Last Session
 
