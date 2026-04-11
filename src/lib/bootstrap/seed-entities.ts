@@ -117,10 +117,6 @@ async function upsertEntities(provider: string, entities: ProviderEntity[]) {
   }
 }
 
-function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 // ---------------------------------------------------------------------------
 // Priority filter — top domestic leagues + major international competitions
 // Keeps the trial API quota manageable while covering the most-followed teams.
