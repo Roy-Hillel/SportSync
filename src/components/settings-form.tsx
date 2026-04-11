@@ -72,7 +72,7 @@ export default function SettingsForm({ syncWindowWeeks, email }: Props) {
               key={opt.value}
               onClick={() => saveWindow(opt.value)}
               className={cn(
-                "px-4 py-1.5 text-sm rounded-md transition-colors duration-150 font-medium",
+                "px-4 py-1.5 text-sm rounded-md transition-colors duration-150 font-medium cursor-pointer",
                 weeks === opt.value
                   ? "bg-white shadow-sm text-zinc-900"
                   : "text-zinc-500 hover:text-zinc-700"
