@@ -49,10 +49,10 @@ See: .planning/PROJECT.md (updated 2026-04-08)
 
 ## Last Session
 
-- Date: 2026-04-08
-- Action: Phase 3 planned — research + 2 PLAN.md files created, verified PASS
-- Artifacts created/updated: phases/03-provider-implementation/03-RESEARCH.md, 03.1-PLAN.md, 03.2-PLAN.md, STATE.md
+- Date: 2026-04-11
+- Action: Phase 3 shipped — PR #1 created targeting main
+- Artifacts: api-football/ provider (client.ts, schemas.ts, index.ts), providers/index.ts updated, engine.ts rate-limit delay removed, .env.local.example updated
 
 ---
 *State initialized: 2026-03-27*
-*Last updated: 2026-04-08 — Milestone v2.0 started*
+*Last updated: 2026-04-11 — Phase 3 shipped, PR #1 open*
