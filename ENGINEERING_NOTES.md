@@ -1,36 +1,97 @@
 # SportSync — Engineering Notes
 
-This document captures the engineering process, bugs encountered, decisions made, and open problems as of the end of the first build session. It is intended to give a new engineer or AI agent full working context without having to re-discover everything from scratch.
+This document captures the engineering process, bugs encountered, decisions made, and open problems. It is intended to give a new engineer or AI agent full working context without having to re-discover everything from scratch.
 
 See `README.md` for setup instructions and `CLAUDE.md` for architecture reference. This file covers the *why*, the *journey*, and the *gotchas*.
 
 ---
 
-## Current State (as of March 22, 2026)
+## Current State (as of April 11, 2026)
 
 ### What is working
 - Google OAuth sign-in and user creation
 - Subscription management (add/remove teams and competitions)
-- Entity search against the local `subscribable_entities` cache (~10k entries seeded)
-- Sync engine: fetches schedules from SportRadar, upserts into `sport_events`, logs results
+- Entity search against the local `subscribable_entities` cache (~8,955 entries — API-Football data)
+- Sync engine: fetches schedules from API-Football, upserts into `sport_events`, logs results
 - iCal feed at `/calendar/[token]` — verified to return valid `.ics` with correct events
 - Manual "Sync Now" button with per-entity results panel
-- Vercel cron configured (`0 */5 * * *`)
+- Vercel cron configured (`0 0 * * *` — daily at midnight UTC)
 - Production deployed at `https://sport-sync-lac.vercel.app`
+- **Israeli league (Ligat Ha'al) fixtures now available** — was broken on SportRadar
 
 ### What is not working / open issues
 
-**Israeli league teams return no future fixtures**
-Maccabi Haifa (sr:competitor:5197) and Maccabi Tel Aviv (sr:competitor:5198) were subscribed to but synced 0 events. Investigation showed their `/competitors/{id}/schedules.json` response returns 30 events, all in the past (newest: December 2025). The Israeli Premier League fixtures for the rest of the 2025/26 season appear not to be published in SportRadar yet, or they are accessible via a different endpoint/competition path. This was not resolved — needs follow-up.
-
 **Google Calendar refresh lag**
-Google polls subscribed iCal feeds on its own schedule (up to 24h). The feed is correct and verified, but the user may not see events in Google Calendar immediately. No workaround exists — this is a Google limitation.
+Google polls subscribed iCal feeds on its own schedule (up to 24h). The feed is correct and verified, but the user may not see events immediately. No workaround — Google limitation.
 
 **Champions League bracket TBDs**
-The final rounds (semifinals, final) currently show as "WSF1 vs WSF2" etc. because SportRadar hasn't assigned teams yet. These will auto-update on future syncs once the bracket fills in.
+Final rounds may show as TBDs until API-Football publishes the bracket. Auto-updates on future syncs.
 
-**SportRadar trial daily quota**
-Trial plan = 1,000 requests/day. The initial bootstrap consumed ~778 requests. Be careful about running bootstrap + multiple syncs on the same day. Quota resets at midnight UTC.
+**South American league season heuristic**
+`deriveSeason()` uses month < July → previous year. Works for European/Israeli leagues (Aug start) but wrong for Argentine/Brazilian leagues (Jan start). Not a current problem — no South American teams subscribed.
+
+---
+
+## Migration History
+
+### v1.0 — SportRadar (March 2026)
+Initial build used SportRadar trial API. Key limitation: Israeli league (Ligat Ha'al) returned 0 future fixtures — data not available on trial tier.
+
+### v2.0 — API-Football (April 2026)
+Migrated to API-Football (api-sports.io). Israeli fixtures now available. Full entity re-seed (8,955 entities). All user subscriptions wiped (small user base, clean restart preferred over complex migration).
+
+**API-Football Pro plan:** Active until 2026-05-08. Key: `API_FOOTBALL_KEY` in Vercel env vars.
+
+---
+
+## API-Football — Accumulated Knowledge
+
+### Plan & Rate Limits
+- **Pro tier:** 7,500 req/day, 300 req/min
+- **Auth header:** `x-apisports-key` — NOT `Authorization: Bearer`, NOT `x-api-key`
+- **Base URL:** `https://v3.football.api-sports.io`
+- **Response wrapper:** all endpoints return `{ response: [...] }`
+
+### Season Identification
+API-Football identifies seasons by the **year the season started**:
+- 2025/26 European/Israeli season → `season=2025`
+- Query in April 2026 → use `season=2025` (not 2026)
+
+`deriveSeason()` helper in `src/lib/providers/api-football/index.ts`: `month < 7 ? year - 1 : year`
+
+### Nullable Fields (confirmed from production)
+- `fixture.venue.id` — nullable (some Champions League fixtures)
+- `league.flag` — nullable (international competitions like UCL, World Cup)
+- `goals.home`, `goals.away` — nullable pre-match
+
+### Country Names
+- International competitions (UCL, Europa League, World Cup): `"World"`
+- Israel: `"Israel"`
+- England, Spain, Germany, etc.: standard names (same as expected)
+
+### Known Entity IDs
+| Entity | Type | Provider ID |
+|--------|------|-------------|
+| Maccabi Haifa | team | `4195` |
+| Ligat Ha'al | league | `383` |
+| UEFA Champions League | league | `2` |
+| UEFA Europa League | league | `3` |
+| UEFA Conference League | league | `848` |
+| Premier League (England) | league | `39` |
+| La Liga (Spain) | league | `140` |
+| Serie A (Italy) | league | `135` |
+| Bundesliga (Germany) | league | `78` |
+| Ligue 1 (France) | league | `61` |
+
+### Status Codes
+| Code | Meaning | Maps to |
+|------|---------|---------|
+| `NS` | Not Started | `scheduled` |
+| `1H`, `HT`, `2H`, `ET`, `P` | In Play | `live` |
+| `FT`, `AET`, `PEN` | Finished | `closed` |
+| `PST` | Postponed | `postponed` |
+| `CANC` | Cancelled | `cancelled` |
+| `ABD`, `SUSP` | Abandoned/Suspended | `delayed` |
 
 ---
 
@@ -38,200 +99,75 @@ Trial plan = 1,000 requests/day. The initial bootstrap consumed ~778 requests. B
 
 ### 1. ES Module import hoisting — `DATABASE_URL undefined` in bootstrap script
 **Symptom:** `TypeError: Invalid URL` when running `npm run bootstrap`.
-
-**Cause:** The bootstrap script called `config({ path: ".env.local" })` at the top, but ES module `import` statements are hoisted and evaluated *before* any runtime code. By the time `dotenv.config()` ran, `src/lib/db/index.ts` had already been evaluated — and it called `createClient()` immediately at module load time, reading `process.env.DATABASE_URL` before dotenv had injected it.
-
-**Fix:** Made the DB client lazy. `src/lib/db/index.ts` now exports a `Proxy` that defers `createClient()` until the first property access. The Proxy forwards all property gets to the lazily-created Drizzle instance. This means the database connection is only opened when first used, not when the module loads.
-
-```ts
-export const db = new Proxy({} as ReturnType<typeof drizzle<typeof schema>>, {
-  get(_target, prop) {
-    return (getDb() as unknown as Record<string | symbol, unknown>)[prop];
-  },
-});
-```
-
-The `as unknown as Record<...>` double-cast was required for the TypeScript production build — omitting `unknown` caused a type error that only appeared in `npm run build`, not in `npm run dev`.
-
----
+**Cause:** `dotenv.config()` ran after ES module imports were evaluated — DB client initialized before env vars were injected.
+**Fix:** Lazy DB client via Proxy in `src/lib/db/index.ts`. Double-cast `as unknown as Record<...>` required for strict TypeScript build.
 
 ### 2. SportRadar competitor schedule — wrong field name in Zod schema
-**Symptom:** Sync for team subscriptions (Real Madrid, Maccabi Haifa) failed with Zod validation error: `"expected array, received undefined"` at path `sport_events`.
-
-**Cause:** The `CompetitorScheduleResponseSchema` expected `{ sport_events: [...] }` but the actual API response is `{ schedules: [{ sport_event, sport_event_status }] }` — identical structure to the season schedule endpoint.
-
-**Fix:** Updated `CompetitorScheduleResponseSchema` to match:
-```ts
-schedules: z.array(z.object({ sport_event: SportEventSchema }))
-```
-And updated the provider to extract events the same way: `data.schedules.map((s) => s.sport_event)`.
-
----
+**Symptom:** Sync failed with `"expected array, received undefined"` at `sport_events`.
+**Fix:** Updated schema to `{ schedules: [{ sport_event }] }` and extraction accordingly.
 
 ### 3. Competition name stored as "Unknown Competition"
-**Symptom:** Events synced correctly but `competition_name` was "Unknown Competition" and `competition_provider_id` was null.
+**Fix:** Read from `event.sport_event_context.competition.name` (not `event.tournament`).
 
-**Cause:** `mapSportEvent()` read competition name from `event.tournament?.name`, but SportRadar's actual response nests it under `event.sport_event_context.competition.name`.
-
-**Fix:** Added `sport_event_context` to `SportEventSchema` and updated `mapSportEvent` to prefer it:
-```ts
-const competition = event.sport_event_context?.competition ?? event.tournament;
-```
-
----
-
-### 4. Competition seasons ordered oldest-first
-**Symptom:** Champions League subscription synced 0 events despite the endpoint working.
-
-**Cause:** `/competitions/{id}/seasons.json` returns seasons ordered **oldest first**. The code took `seasons[0]` (the 23/24 season, already finished), fetched its schedule, and found 0 events in the future date window.
-
-**Fix:** Changed both `getCompetitionSchedule` and `listTeamsInCompetition` to take `seasons[seasons.length - 1]`.
-
----
+### 4. Competition seasons ordered oldest-first (SportRadar)
+**Fix:** Take `seasons[seasons.length - 1]` for current season.
 
 ### 5. Real Madrid subscription was the Women's team
-**Symptom:** Real Madrid subscription synced events for "Primera Division Women" and "UEFA Champions League Women".
+**Fix:** Bootstrap appends `(W)` suffix when parent competition contains "Women"; `(U19)` for youth competitions.
 
-**Cause:** The search results contained three "Real Madrid" entries with identical display names. The user picked `sr:competitor:522312` which is the women's team (`"gender": "female"` in their profile). The men's team is `sr:competitor:2829`.
+### 6. Rate limiting 429s during sync (SportRadar)
+**Fix:** Added 1.1s delay between entity syncs. Removed after migration to API-Football (300 req/min limit — no delay needed).
 
-**Root cause of the ambiguity:** The bootstrap seeds teams from competition rosters, and all three Real Madrids (men, women, U19) came from different competitions but had the same `display_name`.
-
-**Fix:** Updated `seed-entities.ts` to append gender/age suffixes when the parent competition name contains "Women" or a youth age group (U19, U18, etc.):
-- Women's competition → `"Real Madrid (W)"`
-- Youth competition → `"Real Madrid (U19)"`
-
-Created `fix-display-names.ts` to backfill existing data using a single SQL `UPDATE ... FROM` join (not row-by-row — that took too long on 10k+ teams).
-
----
-
-### 6. Production build TypeScript error
-**Symptom:** `npm run build` failed in CI/Vercel with a TypeScript error in `src/lib/db/index.ts` about the Proxy cast.
-
-**Cause:** The cast `getDb() as Record<string | symbol, unknown>` was rejected by the TypeScript compiler in strict mode. The types don't overlap sufficiently.
-
-**Fix:** `(getDb() as unknown as Record<string | symbol, unknown>)` — the double cast via `unknown` is the standard TypeScript escape hatch for this pattern.
-
----
-
-### 7. Rate limiting 429s during sync
-**Symptom:** After running bootstrap (which uses ~778 of the 1,000 daily API calls), subsequent syncs would 429 on one or more entities.
-
-**Cause 1 — Per-second limit:** The sync engine processed entities in a `for` loop with no delay. Multiple entities synced back-to-back fired requests faster than 1/sec.
-
-**Cause 2 — Daily limit:** The trial plan has 1,000 req/day. Heavy testing + bootstrap on the same day exhausts this.
-
-**Fix for per-second limit:** Added a 1.1s delay between entity syncs:
-```ts
-if (i > 0) await new Promise((r) => setTimeout(r, 1100));
-```
-
-**Fix for daily limit:** Wait until midnight UTC. No code change needed — the cron's 5-hour cadence keeps daily usage well within quota in normal operation.
-
----
-
-### 8. Bootstrap display name fix script ran slowly
-**Symptom:** First version of `fix-display-names.ts` iterated over 10k+ teams and issued one DB UPDATE per row. Would have taken several minutes.
-
-**Fix:** Rewrote to a single SQL `UPDATE ... FROM` join:
-```sql
-UPDATE subscribable_entities team
-SET display_name = team.display_name || ' (W)'
-FROM subscribable_entities comp
-WHERE team.parent_provider_id = comp.provider_id
-  AND team.entity_type = 'team'
-  AND comp.display_name ILIKE '%women%'
-  AND team.display_name NOT LIKE '%(W)%'
-```
-Ran in under 1 second. Updated 999 rows.
+### 7. API-Football season year off by one
+**Symptom:** `getSchedule()` with `season=2026` returned 0 fixtures for Israeli/European leagues.
+**Cause:** `from.getFullYear()` returns 2026 in April, but the 2025/26 season is identified as `2025`.
+**Fix:** `deriveSeason()` helper: `month < 7 ? year - 1 : year`.
 
 ---
 
 ## Infrastructure Setup Notes
 
 ### Supabase connection
-The `postgres` npm package has a conflict when SSL options are passed alongside a connection URL string. The workaround is to parse the URL components manually and pass them as separate options:
-```ts
-const url = new URL(process.env.DATABASE_URL!);
-return postgres({
-  host: url.hostname,
-  port: Number(url.port) || 5432,
-  database: url.pathname.slice(1),
-  username: url.username,
-  password: decodeURIComponent(url.password), // passwords may contain URL-encoded chars
-  ssl: { rejectUnauthorized: false },
-});
-```
-Note: `decodeURIComponent` on the password is important — passwords with `+` or other special characters will fail otherwise.
+Use `postgres` npm package with explicit host/port/password (not connection URL string) to avoid SSL option conflicts. `decodeURIComponent` the password — special chars break URL parsing.
 
 ### drizzle-kit vs app DB connection
-`drizzle-kit` (the CLI migration tool) requires `?sslmode=require` appended to the URL. The app's runtime connection (using the `postgres` npm package) does NOT use this — it uses the explicit `ssl` option instead. `drizzle.config.ts` handles this by appending the param if it's missing.
+`drizzle-kit` requires `?sslmode=require` appended to URL. Runtime connection uses explicit `ssl` option. `drizzle.config.ts` appends the param if missing.
+
+### Vercel environment variables (production)
+| Variable | Value |
+|----------|-------|
+| `SPORTS_PROVIDER` | `api-football` |
+| `API_FOOTBALL_KEY` | *(Pro plan key — see `.env.local`)* |
+| `SPORTRADAR_API_KEY` | *(retained but inactive — SportRadar provider preserved as fallback)* |
 
 ### Vercel deployment
-- Vercel URL was not known before the first deploy — had to deploy with a placeholder `NEXTAUTH_URL`, then update it after getting the assigned URL
-- Auth.js requires the exact callback URL registered in Google Cloud Console: `https://YOUR_DOMAIN/api/auth/callback/google`
-- Both the JavaScript origin AND the redirect URI must be added to Google Cloud Console
+- Auth.js requires exact callback URL registered in Google Cloud Console: `https://YOUR_DOMAIN/api/auth/callback/google`
+- Both JS origin AND redirect URI must be in Google Cloud Console
 
 ---
 
-## SportRadar API — Accumulated Knowledge
-
-### Trial plan constraints
-- **1 request/second** — enforced strictly; rapid-fire requests return 429
-- **1,000 requests/day** — resets at midnight UTC
-- **Coverage:** Major European leagues, Champions League, World Cup, Copa América, MLS, Brasileirão, plus many smaller leagues. Israeli league (Ligat Ha'Al) is present but fixture data may be incomplete.
-
-### Endpoint quirks discovered through testing
-
-**`/competitors/{id}/schedules.json`**
-Returns recent past fixtures + near-future fixtures. For some teams (tested: Israeli Premier League teams), only past results are returned with no future fixtures. This appears to be a data availability issue, not an API bug — SportRadar may not have future fixture data for certain leagues on the trial tier.
-
-**`/competitions/{id}/seasons.json`**
-Seasons are ordered **oldest first** — always use `seasons[seasons.length - 1]` for the current season.
-
-**Event location of competition name**
-Always in `sport_event.sport_event_context.competition.name`. The top-level `tournament` field exists in some responses but is not reliable — `sport_event_context` is the canonical source.
-
-**Competitor gender**
-Not exposed in the schedule or search endpoints. Only available via `/competitors/{id}/profile.json`. Gender disambiguation is done via parent competition name (if competition name contains "Women" → team is women's).
-
-**Known provider IDs for reference:**
-- Real Madrid (men): `sr:competitor:2829`
-- Real Madrid (W): `sr:competitor:522312`
-- UEFA Champions League: `sr:competition:7`
-- Premier League (England): `sr:competition:17`
-- Israeli State Cup: `sr:competition:370`
-
----
-
-## Data State (as of session end)
+## Data State (as of April 11, 2026)
 
 ### `subscribable_entities`
-- 1,265 competitions
-- ~10,176 teams
-- 999 teams with `(W)` suffix
-- Teams without a parent competition in the seeded priority list have no suffix (may be ambiguous)
+- 1,220 competitions (API-Football, `current=true`)
+- ~7,735 teams across priority leagues
+- All rows: `provider = 'api-football'`
+- No SportRadar rows remain
 
 ### `sport_events`
-- 10 Real Madrid (men) fixtures: Primera Division Women (wrong) — these were seeded when the women's Real Madrid was still subscribed. After the user re-subscribed to the correct men's team and synced, these should now be correct LaLiga matches. Verify by checking `competition_name` in the DB.
-- 13 UEFA Champions League fixtures (QFs through the final, some TBD team names)
-- 0 Maccabi Haifa / Maccabi Tel Aviv events (Israeli league fixture data not available)
+- 2 Maccabi Haifa fixtures (confirmed live post-migration):
+  - Maccabi Haifa vs Ironi Kiryat Shmona — Apr 12, Ligat Ha'al, Sammy Ofer Stadium
+  - Maccabi Tel Aviv vs Maccabi Haifa — Apr 15, State Cup, Bloomfield Stadium
+- All rows: `provider = 'api-football'`
 
-### Active subscriptions (production user)
-- UEFA Champions League (`sr:competition:7`)
-- Maccabi Haifa FC (`sr:competitor:5197`)
-- Premier League (`sr:competition:17`) — added later; may have events after next successful sync
-- Real Madrid — re-added after discovering it was the women's team; the correct men's ID is `sr:competitor:2829`
+### Active subscriptions
+- Wiped during v2.0 migration (clean restart)
+- Roy re-subscribed to Maccabi Haifa (verified working — 2 events synced)
 
 ---
 
 ## Open Questions / Next Steps
 
-1. **Israeli league fixtures** — investigate whether SportRadar has upcoming Israeli Premier League data via the competition schedule endpoint (`/competitions/{id}/seasons.json` → season schedule) rather than the competitor schedule endpoint. The competitor endpoint only returned past results.
-
-2. **Verify Real Madrid events are now correct** — after the user removed the women's subscription and re-added the men's team, run a sync and confirm `competition_name` shows LaLiga matches, not women's competitions.
-
-3. **Production bootstrap** — `subscribable_entities` in the production Supabase DB needs to be seeded. The user was using the same DB for dev and prod (same `DATABASE_URL`), so it may already be seeded. Confirm by checking the production DB.
-
-4. **`fix-display-names` already applied** — the gender/age suffix backfill was run against the (shared) Supabase DB. No need to re-run.
-
-5. **Cron first run** — Vercel cron will fire automatically every 5 hours. First automatic sync will happen within 5 hours of deploy.
+1. **Sync window** — syncs next 90 days. Fixtures beyond that won't appear until within range.
+2. **Google OAuth errors** — 3 callback errors observed in runtime logs around migration time. May be stale sessions. Monitor.
+3. **API-Football Pro plan renewal** — expires 2026-05-08. Set a reminder.
