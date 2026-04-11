@@ -166,9 +166,10 @@ Use `postgres` npm package with explicit host/port/password (not connection URL 
 
 ### `subscribable_entities`
 - 1,220 competitions (API-Football, `current=true`)
-- ~7,735 teams across priority leagues
+- 8,658 unique teams across priority leagues (14,098 team rows inserted, deduplicated by new 3-column unique constraint)
 - All rows: `provider = 'api-football'`
 - No SportRadar rows remain
+- 0 mismatched rows (entity_type='competition' with team logo URL) — verified post-seed
 
 ### `sport_events`
 - 2 Maccabi Haifa fixtures (confirmed live post-migration):
