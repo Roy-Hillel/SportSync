@@ -142,8 +142,8 @@ const PRIORITY_COUNTRIES = new Set([
   "Brazil",
   "Argentina",
   "USA",
-  "International Clubs",
-  "International",
+  "Israel",   // Ligat Ha'al + Maccabi Haifa
+  "World",    // UEFA/FIFA international competitions (Champions League, Europa League, World Cup etc.)
 ]);
 
 // ---------------------------------------------------------------------------
