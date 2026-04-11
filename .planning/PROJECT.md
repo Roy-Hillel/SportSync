@@ -66,21 +66,24 @@ Current scope (v3.0 Subscription Filters):
 
 ## Context
 
-**Production state (as of 2026-04-08):**
+**Production state (as of 2026-04-11):**
 - Live at https://sport-sync-lac.vercel.app
 - Single production user (Roy)
-- Active subscriptions: UEFA Champions League, Maccabi Haifa FC, Premier League, Real Madrid (men)
-- SportRadar trial quota/subscription issues → migrating to API-Football Pro ($19/month, 7,500 req/day)
-- API-Football Pro plan active until 2026-05-08; key validated with real API calls
+- Active subscriptions: Maccabi Haifa FC (team) — reset after v2.0 migration
+- Provider: API-Football Pro ($19/month, 7,500 req/day) — **plan expires 2026-05-08, must renew**
+- 1,220 competitions + 8,658 unique teams seeded in `subscribable_entities`
+- Cron: daily at midnight UTC (`0 0 * * *`)
 
-**Validated API-Football facts (from real calls, 2026-04-08):**
-- API key: goes in `.env.local` as `API_FOOTBALL_KEY` (value: `7f44654a2da7324433758662bcf46323`)
+**Validated API-Football facts (from real calls, 2026-04-11):**
+- API key: goes in `.env.local` as `API_FOOTBALL_KEY`
 - Maccabi Haifa: team ID `4195`, confirmed 2 upcoming fixtures
 - Ligat Ha'al: league ID `383`, current season year `2025`
-- Rate limits: 300 req/min on Pro (no per-second limit) — remove 1.1s delay
+- Rate limits: 300 req/min on Pro (no per-second limit)
 - `fixture.venue.id` can be `null` on some fixtures
 - `league.flag` is `null` for international competitions (Champions League)
 - `league.season` is an integer year (e.g. `2025`), not a string ID
+- `GET /fixtures/rounds?league=<id>&season=<year>` returns array of round name strings
+- `GET /standings?league=<id>&season=<year>` returns ranked teams with `rank` field
 
 **Tech environment:**
 - Next.js 14 App Router + TypeScript
