@@ -1,7 +1,7 @@
 # Requirements: SportSync
 
 **Defined:** 2026-03-27
-**Updated:** 2026-04-08 — v2.0 API-Football Migration requirements added
+**Updated:** 2026-04-11 — v3.0 Subscription Filters requirements added
 **Core Value:** A subscribed user's calendar always shows accurate upcoming match times — automatically, without manual effort.
 
 ---
