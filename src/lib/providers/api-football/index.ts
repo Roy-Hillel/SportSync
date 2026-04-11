@@ -162,12 +162,22 @@ export class ApiFootballProvider implements SportsDataProvider {
     const fmtFrom = from.toISOString().split("T")[0];
     const fmtTo = to.toISOString().split("T")[0];
 
-    const params: Record<string, string | number> =
+    const buildParams = (s: number): Record<string, string | number> =>
       entity.entityType === "competition"
-        ? { league: entity.providerId, season, from: fmtFrom, to: fmtTo }
-        : { team: entity.providerId, season, from: fmtFrom, to: fmtTo };
+        ? { league: entity.providerId, season: s, from: fmtFrom, to: fmtTo }
+        : { team: entity.providerId, season: s, from: fmtFrom, to: fmtTo };
 
-    const data = await this.client.get("/fixtures", params, FixturesResponseSchema);
+    const data = await this.client.get("/fixtures", buildParams(season), FixturesResponseSchema);
+
+    // Summer tournaments (e.g. World Cup) use the calendar year as the season,
+    // not the start-year of a club season. If the primary call returns nothing,
+    // retry with season+1 to catch those cases.
+    if (data.response.length === 0) {
+      const fallback = await this.client.get("/fixtures", buildParams(season + 1), FixturesResponseSchema);
+      return fallback.response
+        .map(mapFixture)
+        .filter((e): e is ProviderEvent => e !== null);
+    }
 
     return data.response
       .map(mapFixture)
