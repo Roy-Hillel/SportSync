@@ -141,7 +141,7 @@ export class ApiFootballProvider implements SportsDataProvider {
     const fmtFrom = from.toISOString().split("T")[0];
     const fmtTo = to.toISOString().split("T")[0];
 
-    const params =
+    const params: Record<string, string | number> =
       entity.entityType === "competition"
         ? { league: entity.providerId, season, from: fmtFrom, to: fmtTo }
         : { team: entity.providerId, season, from: fmtFrom, to: fmtTo };
