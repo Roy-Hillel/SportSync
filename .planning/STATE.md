@@ -46,9 +46,8 @@ See: .planning/PROJECT.md (updated 2026-04-08)
 ## Last Session
 
 - Date: 2026-04-11
-- Action: Phase 3 shipped — PR #1 created targeting main
-- Artifacts: api-football/ provider (client.ts, schemas.ts, index.ts), providers/index.ts updated, engine.ts rate-limit delay removed, .env.local.example updated
+- Action: Milestone v2.0 fully complete. All 4 phases shipped. Provider migrated to API-Football, 8,955 entities seeded, syncs running clean with 0 errors. Dashboard updated with last sync time + upcoming matches list.
 
 ---
 *State initialized: 2026-03-27*
-*Last updated: 2026-04-11 — Phase 3 shipped, PR #1 open*
+*Last updated: 2026-04-11 — Milestone v2.0 complete*
