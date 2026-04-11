@@ -115,8 +115,8 @@ Deferred to a future milestone. Tracked but not in current roadmap.
 
 ### Conditional Subscription Filters
 
-- **FILTER-01**: User can subscribe to a competition starting from a specific stage
-- **FILTER-02**: User can subscribe to a competition filtered by team rank
+- **FILTER-01**: User can subscribe to a competition starting from a specific stage — **PROMOTED to v3.0 as FILT-01 through FILT-04**
+- **FILTER-02**: User can subscribe to a competition filtered by team rank — **PROMOTED to v3.0 as FILT-05 through FILT-08**
 
 ### Subscription Sharing
 
