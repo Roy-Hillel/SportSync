@@ -1,16 +1,15 @@
 # SportSync
 
-## Current Milestone: v2.0 API-Football Migration
+## Current Milestone: v3.0 Subscription Filters
 
-**Goal:** Replace SportRadar with API-Football as the live data provider — implementing the new provider, re-seeding all entities, migrating sport_events, and remapping user subscriptions to the new provider ID space.
+**Goal:** Let users subscribe to a competition with optional filters that narrow which fixtures get synced — starting from a specific round (FILTER-01) or only involving top-N ranked teams (FILTER-02). Both features share the same subscription-time filter model and ship together.
 
 **Target features:**
-- New `ApiFootballProvider` implementing the existing `SportsDataProvider` interface with Zod schemas for API-Football response shapes
-- Updated bootstrap script using API-Football endpoints (`GET /leagues`, `GET /teams?league&season`)
-- Full re-seed of `subscribable_entities` (provider IDs change from SportRadar format to API-Football integer IDs)
-- Clear and re-populate `sport_events` after re-seed
-- User subscription remapping (old SportRadar entity IDs → new API-Football IDs)
-- Env var updates (`API_FOOTBALL_KEY`, `SPORTS_PROVIDER`) and removal of 1.1s per-second delay
+- FILTER-01: Stage/Round filter — user picks a start round (e.g., "Round of 16") at subscription creation; only fixtures from that round onward are synced. API path: `GET /fixtures/rounds` for round names, `GET /fixtures?round=` for filtering.
+- FILTER-02: Team rank filter — user subscribes to a competition filtered to top-N ranked teams (e.g., "La Liga top 10"); sync fetches standings at sync time, extracts the top-N team IDs, then only syncs fixtures involving those teams. API path: `GET /standings` for ranked team IDs.
+- Subscription schema change: `user_subscriptions` gets optional `start_round` (text) and `top_n_teams` (integer) columns.
+- UI: subscription creation modal gets pickers for both filters (optional, default = no filter).
+- Sync logic: engine applies active filters before upserting to `sport_events`.
 
 ---
 
