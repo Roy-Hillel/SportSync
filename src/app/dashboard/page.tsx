@@ -157,6 +157,9 @@ export default async function DashboardPage() {
       </header>
 
       <div className="max-w-2xl mx-auto px-4 py-8 space-y-8">
+        {/* Last sync status */}
+        <LastSyncTime lastSyncedAt={lastSyncedAt} />
+
         {/* Calendar feed */}
         <CalendarInstructions webcalUrl={webcalUrl} httpUrl={calendarUrl} />
 
