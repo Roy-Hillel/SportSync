@@ -188,7 +188,6 @@ export default async function DashboardPage() {
             </div>
           </div>
           <SubscriptionList subscriptions={userSubscriptions} />
-          <LastSyncTime lastSyncedAt={lastSyncedAt} />
         </section>
 
         {/* Upcoming Matches */}
