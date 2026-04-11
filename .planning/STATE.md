@@ -5,7 +5,7 @@
 See: .planning/PROJECT.md (updated 2026-04-08)
 
 **Core value:** A subscribed user's calendar always shows accurate upcoming match times — automatically, without manual effort.
-**Current focus:** Milestone v2.0 — API-Football Migration (defining requirements, roadmap pending)
+**Current focus:** Milestone v3.0 — Subscription Filters (FILTER-01: Stage/Round filter, FILTER-02: Team rank filter)
 
 ## Current Phase
 
