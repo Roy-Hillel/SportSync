@@ -21,7 +21,7 @@ See: .planning/PROJECT.md (updated 2026-04-08)
 |-------|------|--------|-----------|
 | 1 | Data & Production Verification (v1.0) | Superseded | — |
 | 2 | Code Quality & Quota Safety (v1.0) | Superseded | — |
-| 3 | Provider Implementation (v2.0) | Planned | — |
+| 3 | Provider Implementation (v2.0) | Shipped | 2026-04-11 |
 | 4 | Bootstrap & Entity Re-seed (v2.0) | Pending | — |
 | 5 | Data Migration & Subscription Remapping (v2.0) | Pending | — |
 | 6 | Cutover & Validation (v2.0) | Pending | — |
