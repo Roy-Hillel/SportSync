@@ -1,12 +1,20 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
-import { subscriptions, subscribableEntities, users } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import {
+  subscriptions,
+  subscribableEntities,
+  users,
+  syncLog,
+  sportEvents,
+} from "@/lib/db/schema";
+import { eq, isNull, gt, notInArray, inArray, asc, desc } from "drizzle-orm";
 import SubscriptionList from "@/components/subscription-list";
 import CalendarInstructions from "@/components/calendar-instructions";
 import AddSubscriptionModal from "@/components/add-subscription-modal";
 import SyncButton from "@/components/sync-button";
+import LastSyncTime from "@/components/last-sync-time";
+import UpcomingMatches from "@/components/upcoming-matches";
 import { Settings2 } from "lucide-react";
 import Link from "next/link";
 
