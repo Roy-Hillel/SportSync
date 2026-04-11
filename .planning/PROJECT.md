@@ -41,14 +41,19 @@ These features are shipped and working in production:
 
 ### Active
 
-Current migration scope (v2.0 API-Football Migration):
+Current scope (v3.0 Subscription Filters):
 
-- [ ] Implement `ApiFootballProvider` with Zod schemas for fixture/league/team response shapes
-- [ ] Update bootstrap script to seed from API-Football (`/leagues`, `/teams?league&season`)
-- [ ] Re-seed `subscribable_entities` with API-Football provider IDs (e.g., Maccabi Haifa `4195`, Ligat Ha'al `383`)
-- [ ] Clear and re-populate `sport_events` after re-seed
-- [ ] Remap existing user subscriptions from SportRadar entity IDs to API-Football entity IDs
-- [ ] Update env vars (`API_FOOTBALL_KEY`, `SPORTS_PROVIDER`) and remove 1.1s rate-limit delay
+**FILTER-01: Stage/Round Filter**
+- [ ] **FILT-01**: `user_subscriptions` has optional `start_round` column (text, nullable)
+- [ ] **FILT-02**: Subscription creation UI shows a round picker populated from `GET /fixtures/rounds` for the selected competition
+- [ ] **FILT-03**: Sync engine filters fetched fixtures to those at or after `start_round` when the column is set
+- [ ] **FILT-04**: A per-competition round ordering map exists (rounds are strings like "Regular Season - 1", "Round of 16"; API returns unordered)
+
+**FILTER-02: Team Rank Filter**
+- [ ] **FILT-05**: `user_subscriptions` has optional `top_n_teams` column (integer, nullable)
+- [ ] **FILT-06**: Subscription creation UI shows a top-N picker (e.g., "Top 5", "Top 10", "Top 20") for competition subscriptions
+- [ ] **FILT-07**: Sync engine calls `GET /standings` at sync time for the competition, extracts the top-N team IDs, then filters fixtures to those involving at least one ranked team
+- [ ] **FILT-08**: Standings fetch is quota-efficient — one call per filtered competition subscription per sync
 
 ### Out of Scope
 
