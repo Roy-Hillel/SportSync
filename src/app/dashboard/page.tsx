@@ -113,9 +113,12 @@ export default async function DashboardPage() {
         .filter((e) => {
           if (EXCLUDED_STATUSES.includes(e.status)) return false;
           return (
-            (e.homeTeamProviderId !== null && providerIdSet.has(e.homeTeamProviderId)) ||
-            (e.awayTeamProviderId !== null && providerIdSet.has(e.awayTeamProviderId)) ||
-            (e.competitionProviderId !== null && providerIdSet.has(e.competitionProviderId))
+            (e.homeTeamProviderId !== null &&
+              providerIdSet.has(e.homeTeamProviderId)) ||
+            (e.awayTeamProviderId !== null &&
+              providerIdSet.has(e.awayTeamProviderId)) ||
+            (e.competitionProviderId !== null &&
+              providerIdSet.has(e.competitionProviderId))
           );
         })
         .map((e) => ({
@@ -157,9 +160,6 @@ export default async function DashboardPage() {
       </header>
 
       <div className="max-w-2xl mx-auto px-4 py-8 space-y-8">
-        {/* Last sync status */}
-        <LastSyncTime lastSyncedAt={lastSyncedAt} />
-
         {/* Calendar feed */}
         <CalendarInstructions webcalUrl={webcalUrl} httpUrl={calendarUrl} />
 
@@ -183,6 +183,8 @@ export default async function DashboardPage() {
               )}
             </div>
             <div className="flex items-center gap-2">
+              {/* Last sync status */}
+              <LastSyncTime lastSyncedAt={lastSyncedAt} />
               <SyncButton />
               <AddSubscriptionModal />
             </div>
