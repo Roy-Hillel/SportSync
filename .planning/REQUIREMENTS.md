@@ -6,6 +6,33 @@
 
 ---
 
+## v3.0 Requirements
+
+Requirements for the Subscription Filters milestone. Both FILTER-01 and FILTER-02 are subscription-time filters and ship together.
+
+### FILTER-01: Stage / Round Filter
+
+- [ ] **FILT-01**: `user_subscriptions` table has a new optional `start_round` column (text, nullable). Null means no filter applied.
+- [ ] **FILT-02**: The subscription creation modal shows a round picker for competition subscriptions, populated via `GET /fixtures/rounds?league=<id>&season=<year>`. The picker is optional (defaults to "All rounds").
+- [ ] **FILT-03**: When `start_round` is set on a subscription, the sync engine fetches the ordered round list for the competition and skips fixtures in rounds before `start_round`.
+- [ ] **FILT-04**: A per-competition round ordering utility exists. API-Football returns rounds as unordered strings (e.g., "Regular Season - 5", "Round of 16", "Quarter-finals"). The utility sorts them so "before/after" comparisons are possible.
+
+### FILTER-02: Team Rank Filter
+
+- [ ] **FILT-05**: `user_subscriptions` table has a new optional `top_n_teams` column (integer, nullable). Null means no filter applied.
+- [ ] **FILT-06**: The subscription creation modal shows a top-N picker for competition subscriptions (options: Top 5, Top 10, Top 20, custom). Optional, defaults to "All teams".
+- [ ] **FILT-07**: When `top_n_teams` is set on a subscription, the sync engine calls `GET /standings?league=<id>&season=<year>` at sync time, extracts the top-N team IDs by rank, and only syncs fixtures where at least one team is in that set.
+- [ ] **FILT-08**: The standings fetch is quota-aware: one call per filtered competition subscription per sync run (not one per fixture). Standings are fetched once and reused for all fixture filtering within that sync.
+
+### Shared / Cross-Cutting
+
+- [ ] **FILT-09**: DB migration adds `start_round` and `top_n_teams` columns to `user_subscriptions` (Drizzle schema + SQL migration file).
+- [ ] **FILT-10**: Both filters are independent and composable — a subscription can have both `start_round` and `top_n_teams` set simultaneously.
+- [ ] **FILT-11**: Existing subscriptions without filters continue to behave identically (no regression).
+- [ ] **FILT-12**: The subscription list UI (dashboard) displays active filters on each subscription card so the user knows what is configured.
+
+---
+
 ## v2.0 Requirements
 
 Requirements for the API-Football migration milestone. This is a production migration — research phase is complete. Focus is execution.
