@@ -101,7 +101,7 @@ export default function SettingsForm({ syncWindowWeeks, email }: Props) {
         <div className="flex flex-col gap-3">
           <button
             onClick={resetToken}
-            className="flex items-center gap-2 text-sm text-amber-600 hover:text-amber-800 transition-colors text-left"
+            className="flex items-center gap-2 text-sm text-amber-600 hover:text-amber-800 transition-colors text-left cursor-pointer"
           >
             <AlertTriangle className="w-4 h-4 shrink-0" />
             Reset calendar URL
