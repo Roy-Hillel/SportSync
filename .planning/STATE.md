@@ -35,8 +35,8 @@ See: .planning/PROJECT.md (updated 2026-04-08)
 ## Last Session
 
 - Date: 2026-04-11
-- Action: Milestone v2.0 fully complete. All 4 phases shipped. Provider migrated to API-Football, 8,955 entities seeded, syncs running clean with 0 errors. Dashboard updated with last sync time + upcoming matches list.
+- Action: Initialized Milestone v3.0 — Subscription Filters. Updated PROJECT.md, REQUIREMENTS.md, ROADMAP.md, and STATE.md. Defined 12 requirements (FILT-01 through FILT-12) across 2 phases (Phase 7: Stage/Round filter, Phase 8: Team rank filter). Phase numbering continues from v2.0 (last phase was 6).
 
 ---
 *State initialized: 2026-03-27*
-*Last updated: 2026-04-11 — Milestone v2.0 complete*
+*Last updated: 2026-04-11 — Milestone v3.0 Subscription Filters initialized*
