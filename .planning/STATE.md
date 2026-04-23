@@ -34,8 +34,8 @@ See: .planning/PROJECT.md (updated 2026-04-08)
 
 ## Last Session
 
-- Date: 2026-04-11
-- Action: Initialized Milestone v3.0 — Subscription Filters. Updated PROJECT.md, REQUIREMENTS.md, ROADMAP.md, and STATE.md. Defined 12 requirements (FILT-01 through FILT-12) across 2 phases (Phase 7: Stage/Round filter, Phase 8: Team rank filter). Phase numbering continues from v2.0 (last phase was 6).
+- Date: 2026-04-23
+- Action: Executed Phase 06.1 (SCORE-01) — both plans complete. Added home_score/away_score to DB schema + migration applied. Extended ProviderEvent type with homeScore/awayScore. Mapped goals in API-Football mapFixture(). Included scores in hashEvent(). Propagated scores through sync engine insert/update paths. Changed sync window to now-3days → +26weeks. Updated iCal generator: buildSummary() shows score in title for closed events (en-dash format), SEQUENCE field added to createEvent(), buildDescription() shows "Final score: N–M" for closed events. TypeScript clean, build passes.
 
 ## Accumulated Context
 
