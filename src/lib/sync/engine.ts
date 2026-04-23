@@ -61,6 +61,7 @@ export async function runFullSync(): Promise<SyncResult> {
     const provider = getActiveProvider();
 
     const now = new Date();
+    const from = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000); // now - 3 days
     // We sync the max window across all users to keep the global event table
     // complete. Individual user feeds filter to their own sync_window_weeks.
     const to = addWeeks(now, 26); // ~6 months ahead
@@ -68,7 +69,7 @@ export async function runFullSync(): Promise<SyncResult> {
     for (let i = 0; i < entities.length; i++) {
       const entity = entities[i];
       try {
-        const entityResult = await syncEntity(entity, provider, now, to);
+        const entityResult = await syncEntity(entity, provider, from, to);
         result.eventsCreated += entityResult.created;
         result.eventsUpdated += entityResult.updated;
         result.eventsUnchanged += entityResult.unchanged;
