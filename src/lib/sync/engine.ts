@@ -156,6 +156,8 @@ async function syncEntity(
         startTime: event.startTime,
         venue: event.venue,
         status: event.status,
+        homeScore: event.homeScore ?? null,
+        awayScore: event.awayScore ?? null,
         dataHash: hash,
         lastFetchedAt: new Date(),
       });
