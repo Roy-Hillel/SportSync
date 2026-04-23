@@ -16,6 +16,8 @@ export function hashEvent(event: ProviderEvent): string {
     event.competitionName,
     event.venue ?? "",
     event.status,
+    event.homeScore != null ? String(event.homeScore) : "",
+    event.awayScore != null ? String(event.awayScore) : "",
   ].join("|");
 
   return createHash("md5").update(payload).digest("hex");
