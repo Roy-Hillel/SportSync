@@ -137,8 +137,36 @@ function buildCalendar(userName: string, events: SportEventRow[]): string {
 function buildDescription(event: SportEventRow): string {
   const lines: string[] = [event.competitionName];
   if (event.venue) lines.push(`Venue: ${event.venue}`);
-  if (event.status !== "scheduled") {
+  if (
+    event.status === "closed" &&
+    event.homeScore != null &&
+    event.awayScore != null
+  ) {
+    lines.push(`Final score: ${event.homeScore}–${event.awayScore}`);
+  } else if (event.status !== "scheduled") {
     lines.push(`Status: ${event.status.toUpperCase()}`);
   }
   return lines.join("\n");
+}
+
+/**
+ * Build the iCal event summary (title).
+ *
+ * Post-match (status === 'closed' with scores available):
+ *   "Real Madrid 3–1 Barcelona"
+ *
+ * All other states (pre-match, live, postponed, etc.):
+ *   "Real Madrid vs Barcelona"
+ *
+ * The en-dash (–) is used as the score separator per locked decision.
+ */
+function buildSummary(event: SportEventRow): string {
+  if (
+    event.status === "closed" &&
+    event.homeScore != null &&
+    event.awayScore != null
+  ) {
+    return `${event.homeTeamName} ${event.homeScore}–${event.awayScore} ${event.awayTeamName}`;
+  }
+  return `${event.homeTeamName} vs ${event.awayTeamName}`;
 }
