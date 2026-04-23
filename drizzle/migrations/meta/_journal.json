@@ -15,6 +15,13 @@
       "when": 1775907900695,
       "tag": "0001_silky_virginia_dare",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1776932705818,
+      "tag": "0002_needy_crystal",
+      "breakpoints": true
     }
   ]
 }
