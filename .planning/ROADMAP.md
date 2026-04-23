@@ -142,7 +142,6 @@ Tasks:
 
 ## Backlog (v4+ — not in current roadmap)
 
-- SCORE-01: Post-match score in calendar event
 - TIMEAHEAD-01: Per-subscription time-ahead override
 - SHARE-01: Subscription export/import
 - SPORT-01/02: Multi-sport support
