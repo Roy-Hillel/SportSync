@@ -71,6 +71,8 @@ function mapFixture(item: ApiFootballFixtureItem): ProviderEvent | null {
     startTime,
     venue: item.fixture.venue.name ?? undefined,
     status: mapStatus(item.fixture.status.short),
+    homeScore: item.goals.home,   // null pre-match, number post-match
+    awayScore: item.goals.away,   // null pre-match, number post-match
   };
 }
 
