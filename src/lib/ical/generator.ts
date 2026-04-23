@@ -123,9 +123,10 @@ function buildCalendar(userName: string, events: SportEventRow[]): string {
       location: event.venue ?? undefined,
       start: event.startTime,
       end,
-      // SEQUENCE allows calendar clients to detect updates to the same event.
-      // We don't increment it explicitly, but including the lastFetchedAt
-      // as a timestamp-based UID ensures the event is treated as updated.
+      // SEQUENCE tells calendar clients this event has been updated.
+      // lastFetchedAt is a monotonically increasing timestamp — converting
+      // to seconds gives an integer that increments on every sync write.
+      sequence: Math.floor(event.lastFetchedAt.getTime() / 1000),
       url: undefined,
     });
   }
