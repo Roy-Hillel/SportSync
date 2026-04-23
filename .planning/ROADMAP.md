@@ -16,8 +16,8 @@
 **Plans:** 2 plans
 
 Plans:
-- [ ] Plan 01 — Data layer: DB schema (home_score/away_score), ProviderEvent type, mapFixture() mapping, hashEvent() score inclusion, engine sync + backward window
-- [ ] Plan 02 — iCal generator: score in event title (closed status), SEQUENCE field, score in description
+- [x] Plan 01 — Data layer: DB schema (home_score/away_score), ProviderEvent type, mapFixture() mapping, hashEvent() score inclusion, engine sync + backward window
+- [x] Plan 02 — iCal generator: score in event title (closed status), SEQUENCE field, score in description
 
 ---
 
