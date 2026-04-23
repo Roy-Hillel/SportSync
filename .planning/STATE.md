@@ -37,6 +37,12 @@ See: .planning/PROJECT.md (updated 2026-04-08)
 - Date: 2026-04-11
 - Action: Initialized Milestone v3.0 — Subscription Filters. Updated PROJECT.md, REQUIREMENTS.md, ROADMAP.md, and STATE.md. Defined 12 requirements (FILT-01 through FILT-12) across 2 phases (Phase 7: Stage/Round filter, Phase 8: Team rank filter). Phase numbering continues from v2.0 (last phase was 6).
 
+## Accumulated Context
+
+### Roadmap Evolution
+
+- Phase 06.1 inserted after Phase 6 (before Phase 7): SCORE-01 — Post-match score update in calendar events (URGENT)
+
 ---
 *State initialized: 2026-03-27*
-*Last updated: 2026-04-11 — Milestone v3.0 Subscription Filters initialized*
+*Last updated: 2026-04-23 — Phase 06.1 (SCORE-01) inserted as urgent work before Phase 7*
