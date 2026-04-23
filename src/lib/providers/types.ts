@@ -40,6 +40,10 @@ export interface ProviderEvent {
   startTime: Date;
   venue?: string;
   status: EventStatus;
+  /** Final score — null pre-match or when not yet available */
+  homeScore?: number | null;
+  /** Final score — null pre-match or when not yet available */
+  awayScore?: number | null;
 }
 
 // ---------------------------------------------------------------------------
