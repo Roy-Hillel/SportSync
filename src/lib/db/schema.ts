@@ -118,6 +118,8 @@ export const sportEvents = pgTable(
     venue: text("venue"),
     // "scheduled" | "live" | "closed" | "cancelled" | "postponed" | "delayed"
     status: text("status").notNull().default("scheduled"),
+    homeScore: integer("home_score"),
+    awayScore: integer("away_score"),
     // Hash of fields that would change a calendar event entry.
     // Recalculate on every provider fetch; skip DB write if unchanged.
     dataHash: text("data_hash").notNull(),
