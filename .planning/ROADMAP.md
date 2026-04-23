@@ -69,16 +69,6 @@ Tasks:
 
 ---
 
-### Phase 07.1: SCORE-01: Post-match score update in calendar events (INSERTED)
-
-**Goal:** [Urgent work - to be planned]
-**Requirements**: TBD
-**Depends on:** Phase 7
-**Plans:** 0 plans
-
-Plans:
-- [ ] TBD (run /gsd:plan-phase 07.1 to break down)
-
 ## Phase 8: Team Rank Filter (FILTER-02)
 
 **Goal:** Add an optional `top_n_teams` filter to competition subscriptions. At sync time, standings are fetched to get the current top-N team IDs; only fixtures involving those teams are synced.
