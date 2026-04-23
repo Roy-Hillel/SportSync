@@ -13,10 +13,11 @@
 **Goal:** After a match ends, update the calendar event to include the final score in the title or description (e.g. 'Real Madrid 3–1 Barcelona'). Requires fetching match results from API-Football and updating existing iCal/sport_events entries.
 **Requirements:** SCORE-01
 **Depends on:** Phase 6 (v2.0 complete)
-**Plans:** 0 plans
+**Plans:** 2 plans
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 06.1 to break down)
+- [ ] Plan 01 — Data layer: DB schema (home_score/away_score), ProviderEvent type, mapFixture() mapping, hashEvent() score inclusion, engine sync + backward window
+- [ ] Plan 02 — iCal generator: score in event title (closed status), SEQUENCE field, score in description
 
 ---
 
