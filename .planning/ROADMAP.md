@@ -3,8 +3,20 @@
 **Created:** 2026-04-11
 **Milestone:** Subscription Filters
 **Granularity:** Coarse
-**Total Phases:** 2 (Phases 7–8, continuing from v2.0's phases 3–6)
+**Total Phases:** 3 (Phases 6.1, 7–8, continuing from v2.0's phases 3–6)
 **Requirements covered:** 12/12 ✓
+
+---
+
+## Phase 06.1: SCORE-01: Post-match score update in calendar events (INSERTED)
+
+**Goal:** After a match ends, update the calendar event to include the final score in the title or description (e.g. 'Real Madrid 3–1 Barcelona'). Requires fetching match results from API-Football and updating existing iCal/sport_events entries.
+**Requirements:** SCORE-01
+**Depends on:** Phase 6 (v2.0 complete)
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 06.1 to break down)
 
 ---
 
