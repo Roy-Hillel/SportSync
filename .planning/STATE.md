@@ -9,7 +9,7 @@ See: .planning/PROJECT.md (updated 2026-04-08)
 
 ## Current Phase
 
-**Milestone v3.0 — Subscription Filters.** Active. Phase 06.1 inserted as urgent work before Phase 7. Next: `gsd:discuss-phase 06.1` to begin planning SCORE-01 (post-match score update).
+**Milestone v3.0 — Subscription Filters.** Active. Phase 06.1 (SCORE-01) complete — both plans executed and verified. Next: Phase 7 (FILTER-01: Stage/Round filter).
 
 ## Phase History
 
