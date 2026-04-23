@@ -108,7 +108,7 @@ function buildCalendar(userName: string, events: SportEventRow[]): string {
     // Skip cancelled events — they should not appear in the calendar.
     if (event.status === "cancelled") continue;
 
-    const summary = `${event.homeTeamName} vs ${event.awayTeamName}`;
+    const summary = buildSummary(event);
     const description = buildDescription(event);
 
     // Matches are typically 2 hours; mark end time accordingly.
