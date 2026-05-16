@@ -1,3 +1,5 @@
+"use client";
+
 import { CalendarDays, MapPin } from "lucide-react";
 
 interface Match {
@@ -5,7 +7,7 @@ interface Match {
   homeTeamName: string;
   awayTeamName: string;
   competitionName: string;
-  startTime: Date;
+  startTime: string;
   venue: string | null;
 }
 
@@ -13,16 +15,16 @@ interface Props {
   matches: Match[];
 }
 
-function formatMatchDate(date: Date): string {
-  return date.toLocaleDateString("en-GB", {
+function formatMatchDate(isoString: string): string {
+  return new Date(isoString).toLocaleDateString(undefined, {
     weekday: "short",
     month: "short",
     day: "numeric",
   });
 }
 
-function formatMatchTime(date: Date): string {
-  return date.toLocaleTimeString("en-GB", {
+function formatMatchTime(isoString: string): string {
+  return new Date(isoString).toLocaleTimeString(undefined, {
     hour: "2-digit",
     minute: "2-digit",
   });
@@ -31,7 +33,7 @@ function formatMatchTime(date: Date): string {
 function groupByDate(matches: Match[]): Map<string, Match[]> {
   const groups = new Map<string, Match[]>();
   for (const match of matches) {
-    const key = match.startTime.toDateString();
+    const key = new Date(match.startTime).toLocaleDateString();
     const existing = groups.get(key);
     if (existing) {
       existing.push(match);
