@@ -73,7 +73,7 @@ export default async function DashboardPage() {
     homeTeamName: string;
     awayTeamName: string;
     competitionName: string;
-    startTime: Date;
+    startTime: string;
     venue: string | null;
   }[] = [];
 
