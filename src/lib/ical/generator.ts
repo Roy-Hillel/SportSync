@@ -13,7 +13,7 @@ import ical, { ICalCalendarMethod } from "ical-generator";
 import { db } from "@/lib/db";
 import { sportEvents, subscriptions, subscribableEntities, users } from "@/lib/db/schema";
 import { eq, and, gte, lte, or } from "drizzle-orm";
-import { addWeeks } from "@/lib/sync/date-utils";
+import { addWeeks, subDays } from "@/lib/sync/date-utils";
 
 const APP_NAME = "SportSync";
 
@@ -51,6 +51,10 @@ export async function generateICalForUser(calendarToken: string): Promise<string
   }
 
   const now = new Date();
+  // Include events up to 30 days in the past so calendar clients don't drop
+  // completed matches on the next feed refresh. This is also what lets the
+  // post-match score update (closed status) reach subscribers.
+  const from = subDays(now, 30);
   const to = addWeeks(now, user.syncWindowWeeks);
 
   // Build OR conditions: a sport_event is relevant to this user if it
@@ -71,7 +75,7 @@ export async function generateICalForUser(calendarToken: string): Promise<string
     .from(sportEvents)
     .where(
       and(
-        gte(sportEvents.startTime, now),
+        gte(sportEvents.startTime, from),
         lte(sportEvents.startTime, to),
         or(...conditions)
       )
