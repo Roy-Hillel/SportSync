@@ -129,7 +129,7 @@ export default async function DashboardPage() {
           homeTeamName: e.homeTeamName,
           awayTeamName: e.awayTeamName,
           competitionName: e.competitionName,
-          startTime: e.startTime,
+          startTime: e.startTime.toISOString(),
           venue: e.venue,
         }));
     }
