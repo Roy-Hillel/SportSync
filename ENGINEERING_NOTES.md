@@ -139,6 +139,12 @@ API-Football identifies seasons by the **year the season started**:
 - Full data wipe + re-seed to clear all contaminated rows (923 affected).
 **Key lesson:** API-Football leagues and teams have independent ID namespaces that can numerically collide. Always include `entity_type` in any uniqueness check.
 
+### 10. Past events disappearing from calendar after match date
+**Symptom:** Calendar events for completed matches vanish from Google Calendar / Apple Calendar after the match passes.
+**Root cause:** `generateICalForUser()` in `src/lib/ical/generator.ts` filtered events with `gte(sportEvents.startTime, now)`. On the next feed refresh, calendar clients remove events no longer in the feed.
+**Fix:** Changed lower bound to `subDays(now, 30)` — events stay in the feed for 30 days post-match. This also allows the post-match score update (closed status + SEQUENCE increment) to reach subscribers' calendars before the event is dropped.
+**Side effect (positive):** Score-in-title feature (SCORE-01) only works if the closed event is still in the feed. 30-day lookback ensures that.
+
 ---
 
 ## Infrastructure Setup Notes

@@ -1,11 +1,14 @@
+"use client";
+
 import { CalendarDays, MapPin } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface Match {
   id: string;
   homeTeamName: string;
   awayTeamName: string;
   competitionName: string;
-  startTime: Date;
+  startTime: string;
   venue: string | null;
 }
 
@@ -13,16 +16,16 @@ interface Props {
   matches: Match[];
 }
 
-function formatMatchDate(date: Date): string {
-  return date.toLocaleDateString("en-GB", {
+function formatMatchDate(isoString: string): string {
+  return new Date(isoString).toLocaleDateString(undefined, {
     weekday: "short",
     month: "short",
     day: "numeric",
   });
 }
 
-function formatMatchTime(date: Date): string {
-  return date.toLocaleTimeString("en-GB", {
+function formatMatchTime(isoString: string): string {
+  return new Date(isoString).toLocaleTimeString(undefined, {
     hour: "2-digit",
     minute: "2-digit",
   });
@@ -31,7 +34,7 @@ function formatMatchTime(date: Date): string {
 function groupByDate(matches: Match[]): Map<string, Match[]> {
   const groups = new Map<string, Match[]>();
   for (const match of matches) {
-    const key = match.startTime.toDateString();
+    const key = new Date(match.startTime).toLocaleDateString();
     const existing = groups.get(key);
     if (existing) {
       existing.push(match);
@@ -43,6 +46,16 @@ function groupByDate(matches: Match[]): Map<string, Match[]> {
 }
 
 export default function UpcomingMatches({ matches }: Props) {
+  // Match times are formatted in the user's local timezone, which is only
+  // known in the browser. During SSR (Vercel runs UTC) and the first client
+  // render we show a stable skeleton with no time-dependent content, so the
+  // server and client markup match. After mount we render the real times,
+  // avoiding a hydration mismatch and the flash of UTC snapping to local.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   if (matches.length === 0) {
     return (
       <div className="bg-white rounded-xl border border-zinc-200 py-14 flex flex-col items-center gap-3 text-center">
@@ -53,6 +66,26 @@ export default function UpcomingMatches({ matches }: Props) {
             Add subscriptions and run a sync to see matches here.
           </p>
         </div>
+      </div>
+    );
+  }
+
+  if (!mounted) {
+    return (
+      <div className="space-y-4" aria-hidden>
+        {[0, 1].map((group) => (
+          <div key={group}>
+            <div className="h-3 w-24 bg-zinc-200 rounded mb-2 mx-1 animate-pulse" />
+            <ul className="bg-white rounded-xl border border-zinc-200 overflow-hidden divide-y divide-zinc-100">
+              {[0, 1, 2].map((row) => (
+                <li key={row} className="px-4 py-3">
+                  <div className="h-4 w-48 bg-zinc-200 rounded animate-pulse" />
+                  <div className="h-3 w-32 bg-zinc-100 rounded mt-2 animate-pulse" />
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
       </div>
     );
   }
