@@ -11,7 +11,7 @@ Subscribe to competitions, teams, or nations — upcoming matches appear in your
 - **Google sign-in** — one click, no setup for users
 - **Universal calendar support** — iCal feed works with Google Calendar, Apple Calendar, Outlook, and any app that supports webcal subscriptions
 - **Team & competition subscriptions** — follow Real Madrid, the Champions League, or any team/league
-- **Automatic sync** — Vercel cron runs every 5 hours; manual "Sync Now" button available
+- **Automatic sync** — Vercel cron runs daily; manual "Sync Now" button available
 - **Smart deduplication** — hash-based change detection avoids unnecessary updates
 - **Provider-agnostic** — sports data layer is abstracted; swap providers without changing the sync engine
 
@@ -25,7 +25,7 @@ Subscribe to competitions, teams, or nations — upcoming matches appear in your
 | Database | PostgreSQL via Supabase |
 | ORM | Drizzle ORM |
 | Calendar | `ical-generator` (iCal feed) |
-| Sports data | SportRadar Soccer API v4 |
+| Sports data | API-Football v3 (default); SportRadar Soccer API v4 (legacy, still supported) |
 | Deployment | Vercel (free tier) |
 
 ## Getting Started
@@ -35,7 +35,7 @@ Subscribe to competitions, teams, or nations — upcoming matches appear in your
 - Node.js 18+
 - A [Supabase](https://supabase.com) project (free tier works)
 - A [Google Cloud](https://console.cloud.google.com) project with OAuth credentials
-- A [SportRadar](https://developer.sportradar.com) API key (trial works)
+- An [API-Football](https://dashboard.api-football.com) API key (free tier works) — or a [SportRadar](https://developer.sportradar.com) key if using the legacy provider
 
 ### 1. Clone & install
 
@@ -59,7 +59,9 @@ Fill in `.env.local`:
 | `AUTH_SECRET` | Run `openssl rand -hex 32` |
 | `AUTH_GOOGLE_ID` | Google Cloud Console → APIs & Services → Credentials → OAuth 2.0 Client |
 | `AUTH_GOOGLE_SECRET` | Same as above |
-| `SPORTRADAR_API_KEY` | SportRadar developer portal |
+| `SPORTS_PROVIDER` | `api-football` (default) or `sportradar` |
+| `API_FOOTBALL_KEY` | [API-Football dashboard](https://dashboard.api-football.com) (if `SPORTS_PROVIDER=api-football`) |
+| `SPORTRADAR_API_KEY` | SportRadar developer portal (if `SPORTS_PROVIDER=sportradar`) |
 | `CRON_SECRET` | Run `openssl rand -hex 32` |
 | `NEXTAUTH_URL` | `http://localhost:3000` for dev |
 
@@ -79,7 +81,7 @@ npm run db:migrate    # apply migrations to the database
 
 ### 5. Seed the entity database
 
-This populates the search index with competitions and teams (~10k entries). Takes ~7 minutes due to SportRadar rate limits.
+This populates the search index with competitions and teams (~10k entries). Allow several minutes — the seeder is paced to respect the provider's rate limits.
 
 ```bash
 npm run bootstrap
@@ -127,7 +129,11 @@ src/
     ├── providers/
     │   ├── types.ts                    # SportsDataProvider interface
     │   ├── index.ts                    # Provider registry
-    │   └── sportradar/                 # SportRadar implementation
+    │   ├── api-football/               # API-Football implementation (default)
+    │   │   ├── schemas.ts              # Zod-validated response schemas
+    │   │   ├── client.ts               # Typed HTTP client
+    │   │   └── index.ts                # Provider implementation
+    │   └── sportradar/                 # SportRadar implementation (legacy)
     │       ├── api-types.ts            # Zod-validated response schemas
     │       ├── client.ts               # Typed HTTP client
     │       └── index.ts                # Provider implementation
@@ -161,7 +167,7 @@ src/
 5. Add your Vercel URL to Google Cloud Console's authorized redirect URIs
 6. Run `npm run bootstrap` once against the production database
 
-The cron job (`0 */5 * * *`) is configured in `vercel.json` and runs automatically after deploy.
+The cron job (`0 0 * * *`) is configured in `vercel.json` and runs automatically after deploy.
 
 ## npm Scripts
 
